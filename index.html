@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dayflow</title>
+    <style>
+        :root {
+            --hijau: #2e7d32;
+            --biru: #1565c0;
+            --oranye: #ef6c00;
+            --merah: #c62828;
+            --latar: #f5f6f8;
+            --permukaan: #ffffff;
+            --teks: #1f2328;
+            --teks-pudar: #6b7280;
+            --garis : #e5e7eb;
+        }
+
+        *{
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+            background-color: var(--latar);
+            color: var(--teks);
+            line-height: 1.5;
+        }
+
+        main{
+            max-width: 480px;
+            margin: 0 auto;
+            padding: 16px 16px 88px;
+        }
+
+        nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background-color: var(--permukaan);
+            border-top: 1px solid var(--garis);
+            display: flex;
+        }
+
+        nav button.aktif {
+            color: var(--biru);
+            font-weight: 600;
+            box-shadow: inset 0 3px 0 var(--biru);
+        }
+
+        .halaman {display:none;}
+        .halaman.aktif {display:block;}
+    </style>
+</head>
+
+<body>
+
+        <main>
+            <section id="beranda" class="halaman aktif">
+                <h1>Beranda</h1>
+                <div class="kartu">
+                    <p>Ringkasan hari ini akan tampil disini.</p>
+                </div>
+            </section>
+
+            <section id ="habit" class="halaman">
+                <h1>Habit</h1>
+                <div class="kartu">
+                    <p>Daftar kebiasaan akan tampil disini.</p>
+                </div>
+            </section>
+
+            <section id="task" class="halaman">
+                <h1>Task</h1>
+                <div class="kartu">
+                    <p>Daftar tugas akan tampil disini.</p>
+                </div>
+            </section>
+
+            <section id="finansial" class="halaman">
+                <h1>Finansial</h1>
+                <div class="kartu">
+                    <p>Ringkasan keuangan akan tampil disini.</p>
+                </div>  
+            </section>
+        </main>
+
+        <nav>
+            <button data-halaman="beranda" class="aktif">Beranda</button>
+            <button data-halaman="habit">Habit</button>
+            <button data-halaman="task">Task</button>
+            <button data-halaman="finansial">Finansial</button>
+        </nav>
+    <script>
+        const tombolNav =document.querySelectorAll('nav button');
+        const semuaHalaman = document.querySelectorAll('.halaman');
+
+        function bukaHalaman(id){
+            semuaHalaman.forEach(function (hal){
+            hal.classList.remove('aktif')
+            });
+            document.getElementById(id).classList.add('aktif');
+
+            tombolNav.forEach(function (tombol){
+                tombol.classList.toggle("aktif", tombol.dataset.halaman === id);
+            })
+        }
+
+        tombolNav.forEach(function (tombol){
+            tombol.addEventListener('click', function(){
+                bukaHalaman(tombol.dataset.halaman);
+            });
+        });
+    </script>
+</body>
+</html>
