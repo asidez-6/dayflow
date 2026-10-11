@@ -1,594 +1,855 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="id">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Dayflow</title>
     <style>
-        :root {
-            --hijau: #2e7d32;
-            --biru: #1565c0;
-            --oranye: #ef6c00;
-            --merah: #c62828;
-            --latar: #f5f6f8;
-            --permukaan: #ffffff;
-            --teks: #1f2328;
-            --teks-pudar: #6b7280;
-            --garis : #e5e7eb;
-        }
+      :root {
+        --hijau: #2e7d32;
+        --biru: #1565c0;
+        --oranye: #ef6c00;
+        --merah: #c62828;
+        --latar: #f5f6f8;
+        --permukaan: #ffffff;
+        --teks: #1f2328;
+        --teks-pudar: #6b7280;
+        --garis: #e5e7eb;
+      }
 
-        *{
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
 
-        body {
-            font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
-            background-color: var(--latar);
-            color: var(--teks);
-            line-height: 1.5;
-        }
+      body {
+        font-family:
+          system-ui,
+          -apple-system,
+          "Segoe UI",
+          sans-serif;
+        background-color: var(--latar);
+        color: var(--teks);
+        line-height: 1.5;
+      }
 
-        main{
-            max-width: 480px;
-            margin: 0 auto;
-            padding: 16px 16px 88px;
-        }
+      main {
+        max-width: 480px;
+        margin: 0 auto;
+        padding: 16px 16px 88px;
+      }
 
-        h1 {
-            font-size: 1.5rem;
-            margin-bottom: 8px;
-        }
+      h1 {
+        font-size: 1.5rem;
+        margin-bottom: 8px;
+      }
 
-        p {
-            color: var(--teks-pudar);
-        }
+      p {
+        color: var(--teks-pudar);
+      }
 
-        .kartu {
-            background: var(--permukaan);
-            border: 1px solid var(--garis);
-            border-radius: 12px;
-            padding: 16px;
-            margin-top: 12px;
-        }
+      .kartu {
+        background: var(--permukaan);
+        border: 1px solid var(--garis);
+        border-radius: 12px;
+        padding: 16px;
+        margin-top: 12px;
+      }
 
-        nav {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            background-color: var(--permukaan);
-            border-top: 1px solid var(--garis);
-            display: flex;
-        }
+      nav {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        background-color: var(--permukaan);
+        border-top: 1px solid var(--garis);
+        display: flex;
+      }
 
-        nav button {
-            flex: 1;
-            min-height: 56px;
-            border: none;
-            background: none;
-            font: inherit;
-            font-size: 0.85rem;
-            color: var(--teks-pudar);
-            cursor: pointer;
-        }
+      nav button {
+        flex: 1;
+        min-height: 56px;
+        border: none;
+        background: none;
+        font: inherit;
+        font-size: 0.85rem;
+        color: var(--teks-pudar);
+        cursor: pointer;
+      }
 
-        nav button.aktif {
-            color: var(--biru);
-            font-weight: 600;
-            box-shadow: inset 0 3px 0 var(--biru);
-        }
+      nav button.aktif {
+        color: var(--biru);
+        font-weight: 600;
+        box-shadow: inset 0 3px 0 var(--biru);
+      }
 
-        .daftar {
-            list-style: none;
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-            margin-top: 12px;
-        }
+      .daftar {
+        list-style: none;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        margin-top: 12px;
+      }
 
-        .item-tugas {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            gap: 8px;
-            background-color: var(--permukaan);
-            border: 1px solid var(--garis);
-            border-radius: 12px;
-            padding: 12px 16px;
+      .item-tugas {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 8px;
+        background-color: var(--permukaan);
+        border: 1px solid var(--garis);
+        border-radius: 12px;
+        padding: 12px 16px;
+      }
 
-        }
+      .info {
+        display: flex;
+        flex-direction: column;
+        flex: 1;
+      }
 
-        .info {
-            display: flex;
-            flex-direction: column;
-            flex: 1;
-        }   
+      .judul {
+        font-weight: 600;
+      }
 
-        .judul {
-            font-weight: 600;
-        }
+      .meta {
+        color: var(--teks-pudar);
+        font-size: 0.85rem;
+      }
 
-        .meta {
-            color: var(--teks-pudar);
-            font-size: 0.85rem;
-        }
+      .prioritas {
+        font-size: 0.75rem;
+        text-transform: capitalize;
+        padding: 2px 10px;
+        border-radius: 999px;
+      }
 
-        .prioritas {
-            font-size: 0.75rem;
-            text-transform: capitalize;
-            padding: 2px 10px;
-            border-radius: 999px;
-        }
-        
-        .prioritas.tinggi { background: #fdecea; color: var(--merah); }
-        .prioritas.sedang { background: #fff3e0; color: var(--oranye); }
-        .prioritas.rendah { background: #e8f5e9; color: var(--hijau); }
+      .prioritas.tinggi {
+        background: #fdecea;
+        color: var(--merah);
+      }
+      .prioritas.sedang {
+        background: #fff3e0;
+        color: var(--oranye);
+      }
+      .prioritas.rendah {
+        background: #e8f5e9;
+        color: var(--hijau);
+      }
 
-        .item-tugas.selesai .judul {
-            text-decoration: line-through;
-            color: var(--teks-pudar);
-        }
+      .item-tugas.selesai .judul {
+        text-decoration: line-through;
+        color: var(--teks-pudar);
+      }
 
-        .kosong {
-            color: var(--teks-pudar);
-            text-align: center;
-            padding: 24px;
-        }
-        
-        [hidden] {
-            display: none !important;
-        }
+      .kosong {
+        color: var(--teks-pudar);
+        text-align: center;
+        padding: 24px;
+      }
 
-        .kepala {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
+      [hidden] {
+        display: none !important;
+      }
 
-        .tombol {
-            background: var(--biru);
-            color: #ffffff;
-            border: none;
-            border-radius: 8px;
-            padding: 8px 14px;
-            min-height: 40px;
-            font: inherit;
-            font-weight: 600;
-            cursor: pointer;
-        }
+      .kepala {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
 
-        .tombol.sekunder {
-            background: none;
-            color: var(--teks);
-            border: 1px solid var(--garis);
-        }
+      .tombol {
+        background: var(--biru);
+        color: #ffffff;
+        border: none;
+        border-radius: 8px;
+        padding: 8px 14px;
+        min-height: 40px;
+        font: inherit;
+        font-weight: 600;
+        cursor: pointer;
+      }
 
-        .form {
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-        }
+      .tombol.sekunder {
+        background: none;
+        color: var(--teks);
+        border: 1px solid var(--garis);
+      }
 
-        .form label {
-            display: flex;
-            flex-direction: column;
-            gap: 4px;
-            font-size: 0.85rem;
-            color: var(--teks-pudar);
-        }
+      .form {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+      }
 
-        .form input,
-        .form select {
-            font: inherit;
-            color: var(--teks);
-            padding: 10px;
-            border: 1px solid var(--garis);
-            border-radius: 8px;
-        }
+      .form label {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+        font-size: 0.85rem;
+        color: var(--teks-pudar);
+      }
 
-        .aksi {
-            display: flex;
-            justify-content: flex-end;
-            gap: 8px;
-        }
+      .form input,
+      .form select {
+        font: inherit;
+        color: var(--teks);
+        padding: 10px;
+        border: 1px solid var(--garis);
+        border-radius: 8px;
+      }
 
-        .item-tugas input[type="checkbox"] {
-            width: 20px;
-            height: 20px;
-            flex-shrink: 0;
-        }
+      .aksi {
+        display: flex;
+        justify-content: flex-end;
+        gap: 8px;
+      }
 
-        .filter {
-            display: flex;
-            gap: 8px;
-            margin-top: 12px;
-        }
+      .item-tugas input[type="checkbox"] {
+        width: 20px;
+        height: 20px;
+        flex-shrink: 0;
+      }
 
-        .pil {
-            background: var(--permukaan);
-            border: 1px solid var(--garis);
-            border-radius: 999px;
-            padding: 6px 14px;
-            font: inherit;
-            font-size: 0.85rem;
-            color: var(--teks);
-            cursor: pointer;
-        }
+      .filter {
+        display: flex;
+        gap: 8px;
+        margin-top: 12px;
+      }
 
-        .pil.aktif {
-            background: var(--biru);
-            border-color: var(--biru);
-            color: #ffffff;
-        }
+      .pil {
+        background: var(--permukaan);
+        border: 1px solid var(--garis);
+        border-radius: 999px;
+        padding: 6px 14px;
+        font: inherit;
+        font-size: 0.85rem;
+        color: var(--teks);
+        cursor: pointer;
+      }
 
-        .aksi-item {
-            display: flex;
-            gap: 4px;
-        }
+      .pil.aktif {
+        background: var(--biru);
+        border-color: var(--biru);
+        color: #ffffff;
+      }
 
-        .tombol-kecil {
-            background: none;
-            border: none;
-            padding: 4px 6px;
-            font: inherit;
-            font-size: 0.8rem;
-            color: var(--teks-pudar);
-            cursor: pointer;
-        }
+      .aksi-item {
+        display: flex;
+        gap: 4px;
+      }
 
-            .tombol-kecil.hapus {
-            color: var(--merah);
-        }
-        
-        .item-tugas.lewat {
-            border-color: var(--merah);
-        }
+      .tombol-kecil {
+        background: none;
+        border: none;
+        padding: 4px 6px;
+        font: inherit;
+        font-size: 0.8rem;
+        color: var(--teks-pudar);
+        cursor: pointer;
+      }
 
-        .item-tugas.lewat .meta {
-            color: var(--merah);
-            font-weight: 600;
-        }
+      .tombol-kecil.hapus {
+        color: var(--merah);
+      }
 
-        .halaman {display:none;}
-        .halaman.aktif {display:block;}
+      .item-tugas.lewat {
+        border-color: var(--merah);
+      }
+
+      .item-tugas.lewat .meta {
+        color: var(--merah);
+        font-weight: 600;
+      }
+
+      .label-jadwal {
+        font-size: 0.75rem;
+        padding: 2px 10px;
+        border-radius: 999px;
+        background: #e8f5e9;
+        color: var(--hijau);
+        white-space: nowrap;
+      }
+
+      .halaman {
+        display: none;
+      }
+      .halaman.aktif {
+        display: block;
+      }
     </style>
-</head>
+  </head>
 
-<body>
-        <main>
-            <section id="beranda" class="halaman aktif">
-                <h1>Beranda</h1>
-                <div class="kartu">
-                    <p>Ringkasan hari ini akan tampil disini.</p>
-                </div>
-            </section>
+  <body>
+    <main>
+      <section id="beranda" class="halaman aktif">
+        <h1>Beranda</h1>
+        <div class="kartu">
+          <p>Ringkasan hari ini akan tampil disini.</p>
+        </div>
+      </section>
 
-            <section id ="habit" class="halaman">
-                <h1>Habit</h1>
-                <div class="kartu">
-                    <p>Daftar kebiasaan akan tampil disini.</p>
-                </div>
-            </section>
+      <section id="habit" class="halaman">
+        <div class="kepala">
+          <h1>Habit</h1>
+          <button id="tombolTambahHabit" class="tombol">+ Tambah</button>
+        </div>
 
-            <section id="task" class="halaman">
-                <div class="kepala">
-                    <h1>Task</h1>
-                    <button id="tombolTambahTugas" class="tombol">+ Tambah</button>
-                </div>
-                <div class="filter">
-                    <button class="pil aktif" data-filter="semua">Semua</button>
-                    <button class="pil" data-filter="belum">Belum selesai</button>
-                    <button class="pil" data-filter="selesai">Selesai</button>
-                </div>
-                <form id="formTugas" class="kartu form" hidden>
-                    <label>
-                        Judul 
-                        <input id="inputJudul" type="text" required>
-                    </label>
-                    <label>
-                        Deadline 
-                        <input id="inputDeadline" type="date" required>
-                    </label>
-                    <label>
-                        Prioritas
-                        <select id="inputPrioritas" >
-                            <option value="tinggi">Tinggi</option>
-                            <option value="sedang" selected>Sedang</option>
-                            <option value="rendah">Rendah</option>
-                        </select>
-                    </label>
-                    <div class="aksi">
-                        <button type="button" id="tombolBatal" class="tombol sekunder">Batal</button>
-                        <button type="submit" class="tombol">Simpan</button>
-                    </div>
-                </form>
+        <form id="formHabit" class="kartu form" hidden>
+          <label>
+            Nama kebiasaan
+            <input
+              id="inputNamaHabit"
+              type="text"
+              placeholder="Contoh: Minum air putih"
+              required
+            />
+          </label>
+          <label>
+            Keterangan (opsional)
+            <input
+              id="inputKetHabit"
+              type="text"
+              placeholder="Contoh: 8 gelas"
+            />
+          </label>
+          <label>
+            Jadwal
+            <select id="inputJadwalHabit">
+              <option value="setiap">Setiap hari</option>
+              <option value="kerja">Hari kerja (Senin sampai Jumat)</option>
+              <option value="akhir">Akhir pekan (Sabtu dan Minggu)</option>
+            </select>
+          </label>
+          <div class="aksi">
+            <button type="button" id="tombolBatalHabit" class="tombol sekunder">
+              Batal
+            </button>
+            <button type="submit" class="tombol">Simpan</button>
+          </div>
+        </form>
 
-                <ul id="daftarTugas" class="daftar"></ul>
-            </section>
+        <ul id="daftarHabit" class="daftar"></ul>
+      </section>
 
-            <section id="finansial" class="halaman">
-                <h1>Finansial</h1>
-                <div class="kartu">
-                    <p>Ringkasan keuangan akan tampil disini.</p>
-                </div>  
-            </section>
-        </main>
+      <section id="task" class="halaman">
+        <div class="kepala">
+          <h1>Task</h1>
+          <button id="tombolTambahTugas" class="tombol">+ Tambah</button>
+        </div>
+        <div class="filter">
+          <button class="pil aktif" data-filter="semua">Semua</button>
+          <button class="pil" data-filter="belum">Belum selesai</button>
+          <button class="pil" data-filter="selesai">Selesai</button>
+        </div>
+        <form id="formTugas" class="kartu form" hidden>
+          <label>
+            Judul
+            <input id="inputJudul" type="text" required />
+          </label>
+          <label>
+            Deadline
+            <input id="inputDeadline" type="date" required />
+          </label>
+          <label>
+            Prioritas
+            <select id="inputPrioritas">
+              <option value="tinggi">Tinggi</option>
+              <option value="sedang" selected>Sedang</option>
+              <option value="rendah">Rendah</option>
+            </select>
+          </label>
+          <div class="aksi">
+            <button type="button" id="tombolBatal" class="tombol sekunder">
+              Batal
+            </button>
+            <button type="submit" class="tombol">Simpan</button>
+          </div>
+        </form>
 
-        <nav>
-            <button data-halaman="beranda" class="aktif">Beranda</button>
-            <button data-halaman="habit">Habit</button>
-            <button data-halaman="task">Task</button>
-            <button data-halaman="finansial">Finansial</button>
-        </nav>
+        <ul id="daftarTugas" class="daftar"></ul>
+      </section>
+
+      <section id="finansial" class="halaman">
+        <h1>Finansial</h1>
+        <div class="kartu">
+          <p>Ringkasan keuangan akan tampil disini.</p>
+        </div>
+      </section>
+    </main>
+
+    <nav>
+      <button data-halaman="beranda" class="aktif">Beranda</button>
+      <button data-halaman="habit">Habit</button>
+      <button data-halaman="task">Task</button>
+      <button data-halaman="finansial">Finansial</button>
+    </nav>
     <script>
-        const tombolNav =document.querySelectorAll('nav button');
-        const semuaHalaman = document.querySelectorAll('.halaman');
+      const tombolNav = document.querySelectorAll("nav button");
+      const semuaHalaman = document.querySelectorAll(".halaman");
 
-        function bukaHalaman(id){
-            semuaHalaman.forEach(function (hal){
-            hal.classList.remove('aktif')
-            });
-            document.getElementById(id).classList.add('aktif');
-
-            tombolNav.forEach(function (tombol){
-                tombol.classList.toggle("aktif", tombol.dataset.halaman === id);
-            })
-        }
-
-        tombolNav.forEach(function (tombol){
-            tombol.addEventListener('click', function(){
-                bukaHalaman(tombol.dataset.halaman);
-            });
+      function bukaHalaman(id) {
+        semuaHalaman.forEach(function (hal) {
+          hal.classList.remove("aktif");
         });
+        document.getElementById(id).classList.add("aktif");
 
-        const KUNCI_TUGAS = "dayflow-tugas";
+        tombolNav.forEach(function (tombol) {
+          tombol.classList.toggle("aktif", tombol.dataset.halaman === id);
+        });
+      }
 
-        function simpanTugas() {
+      tombolNav.forEach(function (tombol) {
+        tombol.addEventListener("click", function () {
+          bukaHalaman(tombol.dataset.halaman);
+        });
+      });
+
+      const KUNCI_TUGAS = "dayflow-tugas";
+
+      function simpanTugas() {
         localStorage.setItem(KUNCI_TUGAS, JSON.stringify(tugas));
+      }
+
+      function muatTugas() {
+        const teks = localStorage.getItem(KUNCI_TUGAS);
+        if (teks === null) {
+          return [];
         }
-
-        function muatTugas() {
-            const teks = localStorage.getItem(KUNCI_TUGAS);
-            if (teks === null) {
-                return [];
-            }
-            try {
-                return JSON.parse(teks);
-            } catch (error) {
-                return [];
-            }
+        try {
+          return JSON.parse(teks);
+        } catch (error) {
+          return [];
         }
-        
-        let tugas = muatTugas();
-        let filterAktif = "semua";
-        let idEdit = null;
-        
-        const daftarTugas = document.getElementById('daftarTugas');
+      }
 
-        const NAMA_BULAN = ["Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Agu", "Sep", "Okt", "Nov", "Des"];
-        const URUTAN_PRIORITAS = { tinggi: 0, sedang: 1, rendah: 2 };
+      let tugas = muatTugas();
+      let filterAktif = "semua";
+      let idEdit = null;
 
-        function tanggalHariIni() {
-            const d = new Date();
-            const tahun = d.getFullYear();
-            const bulan = String(d.getMonth() + 1).padStart(2, "0");
-            const hari = String(d.getDate()).padStart(2, "0");
-            return tahun + "-" + bulan + "-" + hari;
-        }
+      const daftarTugas = document.getElementById("daftarTugas");
 
-        function formatTanggal(teks) {
-            const bagian = teks.split("-");
-            return Number(bagian[2]) + " " + NAMA_BULAN[Number(bagian[1]) - 1];
-        }
+      const NAMA_BULAN = [
+        "Jan",
+        "Feb",
+        "Mar",
+        "Apr",
+        "Mei",
+        "Jun",
+        "Jul",
+        "Agu",
+        "Sep",
+        "Okt",
+        "Nov",
+        "Des",
+      ];
+      const URUTAN_PRIORITAS = { tinggi: 0, sedang: 1, rendah: 2 };
 
-        function selisihHari(teks) {
-            const target = new Date(teks + "T00:00:00");
-            const sekarang = new Date(tanggalHariIni() + "T00:00:00");
-            return Math.round((target - sekarang) / 86400000);
-        }
+      function tanggalHariIni() {
+        const d = new Date();
+        const tahun = d.getFullYear();
+        const bulan = String(d.getMonth() + 1).padStart(2, "0");
+        const hari = String(d.getDate()).padStart(2, "0");
+        return tahun + "-" + bulan + "-" + hari;
+      }
 
-        function tampilkanTugas() {
+      function formatTanggal(teks) {
+        const bagian = teks.split("-");
+        return Number(bagian[2]) + " " + NAMA_BULAN[Number(bagian[1]) - 1];
+      }
+
+      function selisihHari(teks) {
+        const target = new Date(teks + "T00:00:00");
+        const sekarang = new Date(tanggalHariIni() + "T00:00:00");
+        return Math.round((target - sekarang) / 86400000);
+      }
+
+      function tampilkanTugas() {
         daftarTugas.innerHTML = "";
 
         const tugasTampil = tugas.filter(function (t) {
-            if (filterAktif === "belum") {
+          if (filterAktif === "belum") {
             return !t.selesai;
-            }
-            if (filterAktif === "selesai") {
+          }
+          if (filterAktif === "selesai") {
             return t.selesai;
-            }
-            return true;
+          }
+          return true;
         });
 
         tugasTampil.sort(function (a, b) {
-            if (a.selesai !== b.selesai) {
+          if (a.selesai !== b.selesai) {
             return a.selesai ? 1 : -1;
-            }
-            if (a.deadline !== b.deadline) {
+          }
+          if (a.deadline !== b.deadline) {
             return a.deadline < b.deadline ? -1 : 1;
-            }
-            return URUTAN_PRIORITAS[a.prioritas] - URUTAN_PRIORITAS[b.prioritas];
-        }); 
+          }
+          return URUTAN_PRIORITAS[a.prioritas] - URUTAN_PRIORITAS[b.prioritas];
+        });
 
         if (tugasTampil.length === 0) {
-            const kosong = document.createElement("li");
-            kosong.className = "kosong";
-            kosong.textContent = tugas.length === 0 ? "Belum ada tugas." : "Tidak ada tugas di bagian ini.";
-            daftarTugas.append(kosong);
-            return;
+          const kosong = document.createElement("li");
+          kosong.className = "kosong";
+          kosong.textContent =
+            tugas.length === 0
+              ? "Belum ada tugas."
+              : "Tidak ada tugas di bagian ini.";
+          daftarTugas.append(kosong);
+          return;
         }
 
         tugasTampil.forEach(function (t) {
-            const li = document.createElement("li");
-                li.className = "item-tugas";
-                if (t.selesai) {
-                    li.classList.add("selesai");
-                }
+          const li = document.createElement("li");
+          li.className = "item-tugas";
+          if (t.selesai) {
+            li.classList.add("selesai");
+          }
 
-                const centang = document.createElement("input");
-                centang.type = "checkbox";
-                centang.checked = t.selesai;
-                centang.addEventListener("change", function () {
-                    t.selesai = centang.checked;
-                    simpanTugas();
-                    tampilkanTugas();
-                });
-
-                const info = document.createElement("div");
-                info.className = "info";
-
-                const judul = document.createElement("span");
-                judul.className = "judul";
-                judul.textContent = t.judul;
-
-                const meta = document.createElement("span");
-                meta.className = "meta";
-                const sisa = selisihHari(t.deadline);
-                let keterangan;
-                if (t.selesai) {
-                    keterangan = "Selesai";
-                } else if (sisa < 0) {
-                    keterangan = "Lewat " + (-sisa) + " hari";
-                li.classList.add("lewat");
-                } else if (sisa === 0) {
-                    keterangan = "Hari ini";
-                } else if (sisa === 1) {
-                    keterangan = "Besok";
-                } else {
-                    keterangan = sisa + " hari lagi";
-                }
-                meta.textContent = formatTanggal(t.deadline) + " · " + keterangan;
-
-                const label = document.createElement("span");
-                label.className = "prioritas " + t.prioritas;
-                label.textContent = t.prioritas;
-
-                const aksi = document.createElement("div");
-                aksi.className = "aksi-item";
-
-                const tombolEdit = document.createElement("button");
-                tombolEdit.className = "tombol-kecil";
-                tombolEdit.textContent = "Edit";
-                tombolEdit.dataset.id = t.id;
-                tombolEdit.addEventListener("click", function () {
-                    mulaiEdit(tombolEdit.dataset.id);
-                });
-
-                const tombolHapus = document.createElement("button");
-                tombolHapus.className = "tombol-kecil hapus";
-                tombolHapus.textContent = "Hapus";
-                tombolHapus.dataset.id = t.id;
-                tombolHapus.addEventListener("click", function () {
-                    hapusTugas(tombolHapus.dataset.id);
-                });
-
-                info.append(judul, meta);
-                aksi.append(tombolEdit, tombolHapus);
-                li.append(centang, info, label, aksi);
-                daftarTugas.append(li);
-            });
-        }
-
-        function hapusTugas(id) {
-            const t = tugas.find(function (x) {
-                return x.id === id;
-            });
-            if (!t) {
-                return;
-            }
-            if (!confirm("Hapus tugas \"" + t.judul + "\"?")) {
-                return;
-            }
-            tugas = tugas.filter(function (x) {
-                return x.id !== id;
-            });
+          const centang = document.createElement("input");
+          centang.type = "checkbox";
+          centang.checked = t.selesai;
+          centang.addEventListener("change", function () {
+            t.selesai = centang.checked;
             simpanTugas();
             tampilkanTugas();
-        }
+          });
 
-        function mulaiEdit(id) {
-            const t = tugas.find(function (x) {
-                return x.id === id;
-            });
-            if (!t) {
-                return;
-            }
-            idEdit = id;
-            document.getElementById("inputJudul").value = t.judul;
-            document.getElementById("inputDeadline").value = t.deadline;
-            document.getElementById("inputPrioritas").value = t.prioritas;
-            formTugas.hidden = false;
-            document.getElementById("inputJudul").focus();
-        }
+          const info = document.createElement("div");
+          info.className = "info";
 
+          const judul = document.createElement("span");
+          judul.className = "judul";
+          judul.textContent = t.judul;
+
+          const meta = document.createElement("span");
+          meta.className = "meta";
+          const sisa = selisihHari(t.deadline);
+          let keterangan;
+          if (t.selesai) {
+            keterangan = "Selesai";
+          } else if (sisa < 0) {
+            keterangan = "Lewat " + -sisa + " hari";
+            li.classList.add("lewat");
+          } else if (sisa === 0) {
+            keterangan = "Hari ini";
+          } else if (sisa === 1) {
+            keterangan = "Besok";
+          } else {
+            keterangan = sisa + " hari lagi";
+          }
+          meta.textContent = formatTanggal(t.deadline) + " · " + keterangan;
+
+          const label = document.createElement("span");
+          label.className = "prioritas " + t.prioritas;
+          label.textContent = t.prioritas;
+
+          const aksi = document.createElement("div");
+          aksi.className = "aksi-item";
+
+          const tombolEdit = document.createElement("button");
+          tombolEdit.className = "tombol-kecil";
+          tombolEdit.textContent = "Edit";
+          tombolEdit.dataset.id = t.id;
+          tombolEdit.addEventListener("click", function () {
+            mulaiEdit(tombolEdit.dataset.id);
+          });
+
+          const tombolHapus = document.createElement("button");
+          tombolHapus.className = "tombol-kecil hapus";
+          tombolHapus.textContent = "Hapus";
+          tombolHapus.dataset.id = t.id;
+          tombolHapus.addEventListener("click", function () {
+            hapusTugas(tombolHapus.dataset.id);
+          });
+
+          info.append(judul, meta);
+          aksi.append(tombolEdit, tombolHapus);
+          li.append(centang, info, label, aksi);
+          daftarTugas.append(li);
+        });
+      }
+
+      function hapusTugas(id) {
+        const t = tugas.find(function (x) {
+          return x.id === id;
+        });
+        if (!t) {
+          return;
+        }
+        if (!confirm('Hapus tugas "' + t.judul + '"?')) {
+          return;
+        }
+        tugas = tugas.filter(function (x) {
+          return x.id !== id;
+        });
+        simpanTugas();
         tampilkanTugas();
-        
-        const formTugas = document.getElementById("formTugas");
-        const tombolTambahTugas = document.getElementById("tombolTambahTugas");
-        const tombolBatal = document.getElementById("tombolBatal");
-        const tombolFilter = document.querySelectorAll(".pil");
+      }
 
-        function tutupForm() {
-            formTugas.reset();
-            formTugas.hidden = true;
-            idEdit = null;
+      function mulaiEdit(id) {
+        const t = tugas.find(function (x) {
+          return x.id === id;
+        });
+        if (!t) {
+          return;
+        }
+        idEdit = id;
+        document.getElementById("inputJudul").value = t.judul;
+        document.getElementById("inputDeadline").value = t.deadline;
+        document.getElementById("inputPrioritas").value = t.prioritas;
+        formTugas.hidden = false;
+        document.getElementById("inputJudul").focus();
+      }
+
+      tampilkanTugas();
+
+      const formTugas = document.getElementById("formTugas");
+      const tombolTambahTugas = document.getElementById("tombolTambahTugas");
+      const tombolBatal = document.getElementById("tombolBatal");
+      const tombolFilter = document.querySelectorAll(".pil");
+
+      function tutupForm() {
+        formTugas.reset();
+        formTugas.hidden = true;
+        idEdit = null;
+      }
+
+      tombolTambahTugas.addEventListener("click", function () {
+        tutupForm();
+        formTugas.hidden = false;
+        document.getElementById("inputJudul").focus();
+      });
+
+      tombolBatal.addEventListener("click", function () {
+        tutupForm();
+      });
+
+      formTugas.addEventListener("submit", function (event) {
+        event.preventDefault();
+
+        const judulBaru = document.getElementById("inputJudul").value.trim();
+        if (judulBaru === "") {
+          return;
+        }
+        const deadlineBaru = document.getElementById("inputDeadline").value;
+        const prioritasBaru = document.getElementById("inputPrioritas").value;
+
+        if (idEdit === null) {
+          tugas.push({
+            id: "t" + Date.now(),
+            judul: judulBaru,
+            deadline: deadlineBaru,
+            prioritas: prioritasBaru,
+            selesai: false,
+          });
+        } else {
+          const t = tugas.find(function (x) {
+            return x.id === idEdit;
+          });
+          if (t) {
+            t.judul = judulBaru;
+            t.deadline = deadlineBaru;
+            t.prioritas = prioritasBaru;
+          }
         }
 
-        tombolTambahTugas.addEventListener("click", function () {
-            tutupForm();
-            formTugas.hidden = false;
-            document.getElementById("inputJudul").focus();
+        simpanTugas();
+        tampilkanTugas();
+        tutupForm();
+      });
+
+      tombolFilter.forEach(function (tombol) {
+        tombol.addEventListener("click", function () {
+          filterAktif = tombol.dataset.filter;
+          tombolFilter.forEach(function (b) {
+            b.classList.toggle("aktif", b === tombol);
+          });
+          tampilkanTugas();
+        });
+      });
+
+      function simpanData(kunci, data) {
+        localStorage.setItem(kunci, JSON.stringify(data));
+      }
+
+      function muatData(kunci) {
+        const teks = localStorage.getItem(kunci);
+        if (teks === null) {
+          return [];
+        }
+        try {
+          return JSON.parse(teks);
+        } catch (error) {
+          return [];
+        }
+      }
+
+      const KUNCI_HABIT = "dayflow-kebiasaan";
+      const NAMA_JADWAL = {
+        setiap: "Setiap hari",
+        kerja: "Hari kerja",
+        akhir: "Akhir pekan",
+      };
+
+      let kebiasaan = muatData(KUNCI_HABIT);
+      let idEditHabit = null;
+
+      const daftarHabit = document.getElementById("daftarHabit");
+
+      function tampilkanHabit() {
+        daftarHabit.innerHTML = "";
+
+        const habitAktif = kebiasaan.filter(function (h) {
+          return h.aktif;
         });
 
-        tombolBatal.addEventListener("click", function () {
-            tutupForm();
+        if (habitAktif.length === 0) {
+          const kosong = document.createElement("li");
+          kosong.className = "kosong";
+          kosong.textContent =
+            "Belum ada kebiasaan. Mulai dari satu yang kecil.";
+          daftarHabit.append(kosong);
+          return;
+        }
+
+        habitAktif.forEach(function (h) {
+          const li = document.createElement("li");
+          li.className = "item-tugas";
+
+          const info = document.createElement("div");
+          info.className = "info";
+
+          const nama = document.createElement("span");
+          nama.className = "judul";
+          nama.textContent = h.nama;
+          info.append(nama);
+
+          if (h.keterangan) {
+            const meta = document.createElement("span");
+            meta.className = "meta";
+            meta.textContent = h.keterangan;
+            info.append(meta);
+          }
+
+          const label = document.createElement("span");
+          label.className = "label-jadwal";
+          label.textContent = NAMA_JADWAL[h.jadwal];
+
+          const aksi = document.createElement("div");
+          aksi.className = "aksi-item";
+
+          const tombolEdit = document.createElement("button");
+          tombolEdit.className = "tombol-kecil";
+          tombolEdit.textContent = "Edit";
+          tombolEdit.dataset.id = h.id;
+          tombolEdit.addEventListener("click", function () {
+            mulaiEditHabit(tombolEdit.dataset.id);
+          });
+
+          const tombolHapus = document.createElement("button");
+          tombolHapus.className = "tombol-kecil hapus";
+          tombolHapus.textContent = "Hapus";
+          tombolHapus.dataset.id = h.id;
+          tombolHapus.addEventListener("click", function () {
+            hapusHabit(tombolHapus.dataset.id);
+          });
+
+          aksi.append(tombolEdit, tombolHapus);
+          li.append(info, label, aksi);
+          daftarHabit.append(li);
+        });
+      }
+
+      tampilkanHabit();
+      function hapusHabit(id) {
+        const h = kebiasaan.find(function (x) {
+          return x.id === id;
+        });
+        if (!h) {
+          return;
+        }
+        if (!confirm("Hapus kebiasaan ini? Riwayatnya tetap tersimpan.")) {
+          return;
+        }
+        h.aktif = false;
+        simpanData(KUNCI_HABIT, kebiasaan);
+        tampilkanHabit();
+      }
+
+      const formHabit = document.getElementById("formHabit");
+      const inputNamaHabit = document.getElementById("inputNamaHabit");
+      const inputKetHabit = document.getElementById("inputKetHabit");
+      const inputJadwalHabit = document.getElementById("inputJadwalHabit");
+
+      function tutupFormHabit() {
+        formHabit.reset();
+        formHabit.hidden = true;
+        idEditHabit = null;
+      }
+
+      function mulaiEditHabit(id) {
+        const h = kebiasaan.find(function (x) {
+          return x.id === id;
+        });
+        if (!h) {
+          return;
+        }
+        idEditHabit = id;
+        inputNamaHabit.value = h.nama;
+        inputKetHabit.value = h.keterangan;
+        inputJadwalHabit.value = h.jadwal;
+        formHabit.hidden = false;
+        inputNamaHabit.focus();
+      }
+
+      document
+        .getElementById("tombolTambahHabit")
+        .addEventListener("click", function () {
+          tutupFormHabit();
+          formHabit.hidden = false;
+          inputNamaHabit.focus();
         });
 
-        formTugas.addEventListener("submit", function (event) {
-            event.preventDefault();
-
-            const judulBaru = document.getElementById("inputJudul").value.trim();
-            if (judulBaru === "") {
-                return;
-            }
-            const deadlineBaru = document.getElementById("inputDeadline").value;
-            const prioritasBaru = document.getElementById("inputPrioritas").value;
-
-            if (idEdit === null) {
-                tugas.push({
-                    id: "t" + Date.now(),
-                    judul: judulBaru,
-                    deadline: deadlineBaru,
-                    prioritas: prioritasBaru,
-                    selesai: false
-                });
-            } else {
-                const t = tugas.find(function (x) {
-                    return x.id === idEdit;
-                });
-                if (t) {
-                t.judul = judulBaru;
-                t.deadline = deadlineBaru;
-                t.prioritas = prioritasBaru;
-                }
-            }
-
-            simpanTugas();
-            tampilkanTugas();
-            tutupForm();
+      document
+        .getElementById("tombolBatalHabit")
+        .addEventListener("click", function () {
+          tutupFormHabit();
         });
 
-        tombolFilter.forEach(function (tombol) {
-            tombol.addEventListener("click", function () {
-                filterAktif = tombol.dataset.filter;
-                tombolFilter.forEach(function (b) {
-                    b.classList.toggle("aktif", b === tombol);
-                });
-                tampilkanTugas();
-            });
-        });
+      formHabit.addEventListener("submit", function (event) {
+        event.preventDefault();
+
+        const nama = inputNamaHabit.value.trim();
+        if (nama === "") {
+          return;
+        }
+        const keterangan = inputKetHabit.value.trim();
+        const jadwal = inputJadwalHabit.value;
+
+        if (idEditHabit === null) {
+          kebiasaan.push({
+            id: "h" + Date.now(),
+            nama: nama,
+            keterangan: keterangan,
+            jadwal: jadwal,
+            aktif: true,
+          });
+        } else {
+          const h = kebiasaan.find(function (x) {
+            return x.id === idEditHabit;
+          });
+          if (h) {
+            h.nama = nama;
+            h.keterangan = keterangan;
+            h.jadwal = jadwal;
+          }
+        }
+
+        simpanData(KUNCI_HABIT, kebiasaan);
+        tampilkanHabit();
+        tutupFormHabit();
+      });
     </script>
-</body>
+  </body>
 </html>
