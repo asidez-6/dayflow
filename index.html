@@ -200,6 +200,48 @@
             flex-shrink: 0;
         }
 
+        .filter {
+            display: flex;
+            gap: 8px;
+            margin-top: 12px;
+        }
+
+        .pil {
+            background: var(--permukaan);
+            border: 1px solid var(--garis);
+            border-radius: 999px;
+            padding: 6px 14px;
+            font: inherit;
+            font-size: 0.85rem;
+            color: var(--teks);
+            cursor: pointer;
+        }
+
+        .pil.aktif {
+            background: var(--biru);
+            border-color: var(--biru);
+            color: #ffffff;
+        }
+
+        .aksi-item {
+            display: flex;
+            gap: 4px;
+        }
+
+        .tombol-kecil {
+            background: none;
+            border: none;
+            padding: 4px 6px;
+            font: inherit;
+            font-size: 0.8rem;
+            color: var(--teks-pudar);
+            cursor: pointer;
+        }
+
+            .tombol-kecil.hapus {
+            color: var(--merah);
+        }
+
         .halaman {display:none;}
         .halaman.aktif {display:block;}
     </style>
@@ -223,10 +265,14 @@
 
             <section id="task" class="halaman">
                 <div class="kepala">
-                <h1>Task</h1>
-                <button id="tombolTambahTugas" class="tombol">+ Tambah</button>
-            </div>
-
+                    <h1>Task</h1>
+                    <button id="tombolTambahTugas" class="tombol">+ Tambah</button>
+                </div>
+                <div class="filter">
+                    <button class="pil aktif" data-filter="semua">Semua</button>
+                    <button class="pil" data-filter="belum">Belum selesai</button>
+                    <button class="pil" data-filter="selesai">Selesai</button>
+                </div>
                 <form id="formTugas" class="kartu form" hidden>
                     <label>
                         Judul 
@@ -307,26 +353,47 @@
         }
         
         let tugas = muatTugas();
-
+        let filterAktif = "semua";
+        let idEdit = null;
+        
         const daftarTugas = document.getElementById('daftarTugas');
 
-        function tampilkanTugas(){
-            daftarTugas.innerHTML = "";
+        function tampilkanTugas() {
+        daftarTugas.innerHTML = "";
 
-            if(tugas.length === 0){
-                const kosong = document.createElement('li');
-                kosong.className = "kosong";
-                kosong.textContent = "belum ada tugas.";
-                daftarTugas.append(kosong);
-                return;
+        const tugasTampil = tugas.filter(function (t) {
+            if (filterAktif === "belum") {
+            return !t.selesai;
             }
+            if (filterAktif === "selesai") {
+            return t.selesai;
+            }
+            return true;
+        });
 
-            tugas.forEach(function (t) {
-                const li = document.createElement("li");
+        if (tugasTampil.length === 0) {
+            const kosong = document.createElement("li");
+            kosong.className = "kosong";
+            kosong.textContent = tugas.length === 0 ? "Belum ada tugas." : "Tidak ada tugas di bagian ini.";
+            daftarTugas.append(kosong);
+            return;
+        }
+
+        tugasTampil.forEach(function (t) {
+            const li = document.createElement("li");
                 li.className = "item-tugas";
                 if (t.selesai) {
-                li.classList.add("selesai");
+                    li.classList.add("selesai");
                 }
+
+                const centang = document.createElement("input");
+                centang.type = "checkbox";
+                centang.checked = t.selesai;
+                centang.addEventListener("change", function () {
+                    t.selesai = centang.checked;
+                    simpanTugas();
+                    tampilkanTugas();
+                });
 
                 const info = document.createElement("div");
                 info.className = "info";
@@ -343,19 +410,62 @@
                 label.className = "prioritas " + t.prioritas;
                 label.textContent = t.prioritas;
 
-                const centang = document.createElement("input");
-                centang.type = "checkbox";
-                centang.checked = t.selesai;
-                centang.addEventListener("change", function () {
-                    t.selesai = centang.checked;
-                    simpanTugas();
-                    tampilkanTugas();
+                const aksi = document.createElement("div");
+                aksi.className = "aksi-item";
+
+                const tombolEdit = document.createElement("button");
+                tombolEdit.className = "tombol-kecil";
+                tombolEdit.textContent = "Edit";
+                tombolEdit.dataset.id = t.id;
+                tombolEdit.addEventListener("click", function () {
+                    mulaiEdit(tombolEdit.dataset.id);
+                });
+
+                const tombolHapus = document.createElement("button");
+                tombolHapus.className = "tombol-kecil hapus";
+                tombolHapus.textContent = "Hapus";
+                tombolHapus.dataset.id = t.id;
+                tombolHapus.addEventListener("click", function () {
+                    hapusTugas(tombolHapus.dataset.id);
                 });
 
                 info.append(judul, meta);
-                li.append(centang, info, label);
+                aksi.append(tombolEdit, tombolHapus);
+                li.append(centang, info, label, aksi);
                 daftarTugas.append(li);
             });
+        }
+
+        function hapusTugas(id) {
+            const t = tugas.find(function (x) {
+                return x.id === id;
+            });
+            if (!t) {
+                return;
+            }
+            if (!confirm("Hapus tugas \"" + t.judul + "\"?")) {
+                return;
+            }
+            tugas = tugas.filter(function (x) {
+                return x.id !== id;
+            });
+            simpanTugas();
+            tampilkanTugas();
+        }
+
+        function mulaiEdit(id) {
+            const t = tugas.find(function (x) {
+                return x.id === id;
+            });
+            if (!t) {
+                return;
+            }
+            idEdit = id;
+            document.getElementById("inputJudul").value = t.judul;
+            document.getElementById("inputDeadline").value = t.deadline;
+            document.getElementById("inputPrioritas").value = t.prioritas;
+            formTugas.hidden = false;
+            document.getElementById("inputJudul").focus();
         }
 
         tampilkanTugas();
@@ -363,15 +473,22 @@
         const formTugas = document.getElementById("formTugas");
         const tombolTambahTugas = document.getElementById("tombolTambahTugas");
         const tombolBatal = document.getElementById("tombolBatal");
+        const tombolFilter = document.querySelectorAll(".pil");
+
+        function tutupForm() {
+            formTugas.reset();
+            formTugas.hidden = true;
+            idEdit = null;
+        }
 
         tombolTambahTugas.addEventListener("click", function () {
+            tutupForm();
             formTugas.hidden = false;
             document.getElementById("inputJudul").focus();
         });
 
         tombolBatal.addEventListener("click", function () {
-            formTugas.reset();
-            formTugas.hidden = true;
+            tutupForm();
         });
 
         formTugas.addEventListener("submit", function (event) {
@@ -381,21 +498,41 @@
             if (judulBaru === "") {
                 return;
             }
+            const deadlineBaru = document.getElementById("inputDeadline").value;
+            const prioritasBaru = document.getElementById("inputPrioritas").value;
 
-            const tugasBaru = {
-                id: "t" + Date.now(),
-                judul: judulBaru,
-                deadline: document.getElementById("inputDeadline").value,
-                prioritas: document.getElementById("inputPrioritas").value,
-                selesai: false
-            };
+            if (idEdit === null) {
+                tugas.push({
+                    id: "t" + Date.now(),
+                    judul: judulBaru,
+                    deadline: deadlineBaru,
+                    prioritas: prioritasBaru,
+                    selesai: false
+                });
+            } else {
+                const t = tugas.find(function (x) {
+                    return x.id === idEdit;
+                });
+                if (t) {
+                t.judul = judulBaru;
+                t.deadline = deadlineBaru;
+                t.prioritas = prioritasBaru;
+                }
+            }
 
-            tugas.push(tugasBaru);
             simpanTugas();
             tampilkanTugas();
+            tutupForm();
+        });
 
-            formTugas.reset();
-            formTugas.hidden = true;
+        tombolFilter.forEach(function (tombol) {
+            tombol.addEventListener("click", function () {
+                filterAktif = tombol.dataset.filter;
+                tombolFilter.forEach(function (b) {
+                    b.classList.toggle("aktif", b === tombol);
+                });
+                tampilkanTugas();
+            });
         });
     </script>
 </body>
