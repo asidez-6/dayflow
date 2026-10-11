@@ -288,9 +288,25 @@
             });
         });
 
-        let tugas =[
+        const KUNCI_TUGAS = "dayflow-tugas";
 
-        ]
+        function simpanTugas() {
+        localStorage.setItem(KUNCI_TUGAS, JSON.stringify(tugas));
+        }
+
+        function muatTugas() {
+            const teks = localStorage.getItem(KUNCI_TUGAS);
+            if (teks === null) {
+                return [];
+            }
+            try {
+                return JSON.parse(teks);
+            } catch (error) {
+                return [];
+            }
+        }
+        
+        let tugas = muatTugas();
 
         const daftarTugas = document.getElementById('daftarTugas');
 
@@ -332,6 +348,7 @@
                 centang.checked = t.selesai;
                 centang.addEventListener("change", function () {
                     t.selesai = centang.checked;
+                    simpanTugas();
                     tampilkanTugas();
                 });
 
@@ -348,36 +365,37 @@
         const tombolBatal = document.getElementById("tombolBatal");
 
         tombolTambahTugas.addEventListener("click", function () {
-        formTugas.hidden = false;
-        document.getElementById("inputJudul").focus();
+            formTugas.hidden = false;
+            document.getElementById("inputJudul").focus();
         });
 
         tombolBatal.addEventListener("click", function () {
-        formTugas.reset();
-        formTugas.hidden = true;
+            formTugas.reset();
+            formTugas.hidden = true;
         });
 
         formTugas.addEventListener("submit", function (event) {
-        event.preventDefault();
+            event.preventDefault();
 
-        const judulBaru = document.getElementById("inputJudul").value.trim();
-        if (judulBaru === "") {
-            return;
-        }
+            const judulBaru = document.getElementById("inputJudul").value.trim();
+            if (judulBaru === "") {
+                return;
+            }
 
-        const tugasBaru = {
-            id: "t" + Date.now(),
-            judul: judulBaru,
-            deadline: document.getElementById("inputDeadline").value,
-            prioritas: document.getElementById("inputPrioritas").value,
-            selesai: false
-        };
+            const tugasBaru = {
+                id: "t" + Date.now(),
+                judul: judulBaru,
+                deadline: document.getElementById("inputDeadline").value,
+                prioritas: document.getElementById("inputPrioritas").value,
+                selesai: false
+            };
 
-        tugas.push(tugasBaru);
-        tampilkanTugas();
+            tugas.push(tugasBaru);
+            simpanTugas();
+            tampilkanTugas();
 
-        formTugas.reset();
-        formTugas.hidden = true;
+            formTugas.reset();
+            formTugas.hidden = true;
         });
     </script>
 </body>
