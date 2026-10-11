@@ -406,6 +406,41 @@
         border-radius: 3px;
       }
 
+      .kepala-kecil {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 8px;
+      }
+
+      .kepala-kecil .sub-judul {
+        margin-bottom: 0;
+      }
+
+      .kartu .form {
+        margin-bottom: 12px;
+      }
+
+      .baris-bawah {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: 4px;
+      }
+
+      .bar-isi.hijau {
+        background: var(--hijau);
+      }
+
+      .bar-isi.merah {
+        background: var(--merah);
+      }
+
+      .teks-lebih {
+        color: var(--merah);
+        font-weight: 600;
+      }
+
       .halaman {
         display: none;
       }
@@ -535,7 +570,93 @@
           <h2 class="sub-judul">Pengeluaran per kategori bulan ini</h2>
           <ul id="daftarKategori" class="daftar-kategori"></ul>
         </div>
+        <div class="kartu">
+          <div class="kepala-kecil">
+            <h2 class="sub-judul">Target tabungan</h2>
+            <button id="tombolTambahTarget" class="tombol-kecil">
+              + Target
+            </button>
+          </div>
+          <form id="formTarget" class="form" hidden>
+            <label>
+              Nama target
+              <input
+                id="inputNamaTarget"
+                type="text"
+                placeholder="Contoh: Monitor baru"
+                required
+              />
+            </label>
+            <label>
+              Jumlah target (Rp)
+              <input
+                id="inputNominalTarget"
+                type="text"
+                inputmode="numeric"
+                placeholder="Contoh: 1500000"
+                required
+              />
+            </label>
+            <label>
+              Deadline (opsional)
+              <input id="inputDeadlineTarget" type="date" />
+            </label>
+            <div class="aksi">
+              <button
+                type="button"
+                id="tombolBatalTarget"
+                class="tombol sekunder"
+              >
+                Batal
+              </button>
+              <button type="submit" class="tombol">Simpan</button>
+            </div>
+          </form>
+          <ul id="daftarTarget" class="daftar-kategori"></ul>
+        </div>
 
+        <div class="kartu">
+          <div class="kepala-kecil">
+            <h2 class="sub-judul">Anggaran bulan ini</h2>
+            <button id="tombolTambahAnggaran" class="tombol-kecil">
+              + Anggaran
+            </button>
+          </div>
+          <form id="formAnggaran" class="form" hidden>
+            <label>
+              Kategori
+              <select id="inputKategoriAnggaran">
+                <option value="Makan">Makan</option>
+                <option value="Transportasi">Transportasi</option>
+                <option value="Kuliah">Kuliah</option>
+                <option value="Hiburan">Hiburan</option>
+                <option value="Kebutuhan">Kebutuhan</option>
+                <option value="Lainnya">Lainnya</option>
+              </select>
+            </label>
+            <label>
+              Batas per bulan (Rp)
+              <input
+                id="inputBatasAnggaran"
+                type="text"
+                inputmode="numeric"
+                placeholder="Contoh: 600000"
+                required
+              />
+            </label>
+            <div class="aksi">
+              <button
+                type="button"
+                id="tombolBatalAnggaran"
+                class="tombol sekunder"
+              >
+                Batal
+              </button>
+              <button type="submit" class="tombol">Simpan</button>
+            </div>
+          </form>
+          <ul id="daftarAnggaran" class="daftar-kategori"></ul>
+        </div>
         <form id="formTx" class="kartu form" hidden>
           <div class="pilih-jenis">
             <label class="opsi">
@@ -1308,10 +1429,197 @@
         });
       }
 
+      const KUNCI_TARGET = "dayflow-target";
+      const KUNCI_ANGGARAN = "dayflow-anggaran";
+      let targetTabungan = muatData(KUNCI_TARGET);
+      let anggaran = muatData(KUNCI_ANGGARAN);
+
+      const daftarTarget = document.getElementById("daftarTarget");
+      const daftarAnggaran = document.getElementById("daftarAnggaran");
+
+      function bacaNominal(teks) {
+        return Number(String(teks).replace(/\D/g, ""));
+      }
+
+      function buatBar(persen, warna) {
+        const latar = document.createElement("div");
+        latar.className = "bar-latar";
+        const isi = document.createElement("div");
+        isi.className = "bar-isi";
+        if (warna) {
+          isi.classList.add(warna);
+        }
+        isi.style.width = Math.min(persen, 100) + "%";
+        latar.append(isi);
+        return latar;
+      }
+
+      function pengeluaranPerKategoriBulanIni() {
+        const bulanIni = tanggalHariIni().slice(0, 7);
+        return transaksi
+          .filter(function (tx) {
+            return tx.jenis === "keluar" && tx.tanggal.slice(0, 7) === bulanIni;
+          })
+          .reduce(function (hasil, tx) {
+            hasil[tx.kategori] = (hasil[tx.kategori] || 0) + tx.nominal;
+            return hasil;
+          }, {});
+      }
+
+      function tampilkanTarget() {
+        daftarTarget.innerHTML = "";
+
+        if (targetTabungan.length === 0) {
+          const kosong = document.createElement("li");
+          kosong.className = "meta";
+          kosong.textContent = "Belum ada target. Contoh: monitor baru.";
+          daftarTarget.append(kosong);
+          return;
+        }
+
+        targetTabungan.forEach(function (t) {
+          const rasio = (t.terkumpul / t.targetNominal) * 100;
+          const teksPersen =
+            rasio > 0 && rasio < 10
+              ? rasio.toFixed(1)
+              : String(Math.round(rasio));
+
+          const li = document.createElement("li");
+
+          const atas = document.createElement("div");
+          atas.className = "baris-atas";
+          const nama = document.createElement("strong");
+          nama.textContent = t.nama;
+          const angka = document.createElement("span");
+          angka.textContent =
+            formatRupiah(t.terkumpul) + " / " + formatRupiah(t.targetNominal);
+          atas.append(nama, angka);
+
+          const bawah = document.createElement("div");
+          bawah.className = "baris-bawah";
+          const ket = document.createElement("span");
+          ket.className = "meta";
+          if (rasio >= 100) {
+            ket.textContent = "Tercapai!";
+          } else {
+            ket.textContent =
+              teksPersen +
+              "%" +
+              (t.deadline ? " · sampai " + formatTanggal(t.deadline) : "");
+          }
+
+          const aksi = document.createElement("div");
+          aksi.className = "aksi-item";
+
+          const tombolTabung = document.createElement("button");
+          tombolTabung.className = "tombol-kecil";
+          tombolTabung.textContent = "+ Tabung";
+          tombolTabung.addEventListener("click", function () {
+            const teks = prompt("Tambah tabungan untuk " + t.nama + " (Rp):");
+            if (teks === null) {
+              return;
+            }
+            const jumlah = bacaNominal(teks);
+            if (!jumlah) {
+              return;
+            }
+            t.terkumpul = t.terkumpul + jumlah;
+            simpanData(KUNCI_TARGET, targetTabungan);
+            tampilkanTarget();
+          });
+
+          const tombolHapus = document.createElement("button");
+          tombolHapus.className = "tombol-kecil hapus";
+          tombolHapus.textContent = "Hapus";
+          tombolHapus.addEventListener("click", function () {
+            if (!confirm("Hapus target " + t.nama + "?")) {
+              return;
+            }
+            targetTabungan = targetTabungan.filter(function (x) {
+              return x.id !== t.id;
+            });
+            simpanData(KUNCI_TARGET, targetTabungan);
+            tampilkanTarget();
+          });
+
+          aksi.append(tombolTabung, tombolHapus);
+          bawah.append(ket, aksi);
+          li.append(atas, buatBar(rasio, "hijau"), bawah);
+          daftarTarget.append(li);
+        });
+      }
+
+      function tampilkanAnggaran() {
+        daftarAnggaran.innerHTML = "";
+
+        if (anggaran.length === 0) {
+          const kosong = document.createElement("li");
+          kosong.className = "meta";
+          kosong.textContent = "Belum ada anggaran.";
+          daftarAnggaran.append(kosong);
+          return;
+        }
+
+        const terpakaiPerKategori = pengeluaranPerKategoriBulanIni();
+
+        anggaran.forEach(function (a) {
+          const terpakai = terpakaiPerKategori[a.kategori] || 0;
+          const persen = Math.round((terpakai / a.batas) * 100);
+          const lebih = terpakai > a.batas;
+
+          const li = document.createElement("li");
+
+          const atas = document.createElement("div");
+          atas.className = "baris-atas";
+          const nama = document.createElement("strong");
+          nama.textContent = a.kategori;
+          const angka = document.createElement("span");
+          angka.textContent =
+            formatRupiah(terpakai) + " / " + formatRupiah(a.batas);
+          atas.append(nama, angka);
+
+          const bawah = document.createElement("div");
+          bawah.className = "baris-bawah";
+          const ket = document.createElement("span");
+          if (lebih) {
+            ket.className = "teks-lebih";
+            ket.textContent = "Lebih " + formatRupiah(terpakai - a.batas);
+          } else {
+            ket.className = "meta";
+            ket.textContent =
+              "Sisa " +
+              formatRupiah(a.batas - terpakai) +
+              " (" +
+              persen +
+              "% terpakai)";
+          }
+
+          const tombolHapus = document.createElement("button");
+          tombolHapus.className = "tombol-kecil hapus";
+          tombolHapus.textContent = "Hapus";
+          tombolHapus.addEventListener("click", function () {
+            if (!confirm("Hapus anggaran " + a.kategori + "?")) {
+              return;
+            }
+            anggaran = anggaran.filter(function (x) {
+              return x.id !== a.id;
+            });
+            simpanData(KUNCI_ANGGARAN, anggaran);
+            tampilkanAnggaran();
+          });
+
+          bawah.append(ket, tombolHapus);
+          li.append(atas, buatBar(persen, lebih ? "merah" : ""), bawah);
+          daftarAnggaran.append(li);
+        });
+      }
+
       function tampilkanTransaksi() {
         daftarTx.innerHTML = "";
 
         tampilkanRingkasanUang();
+
+        tampilkanAnggaran();
 
         if (transaksi.length === 0) {
           const kosong = document.createElement("li");
@@ -1428,6 +1736,91 @@
         tampilkanTransaksi();
         tutupFormTx();
       });
+      const formTarget = document.getElementById("formTarget");
+      const formAnggaran = document.getElementById("formAnggaran");
+
+      document
+        .getElementById("tombolTambahTarget")
+        .addEventListener("click", function () {
+          formTarget.reset();
+          formTarget.hidden = false;
+          document.getElementById("inputNamaTarget").focus();
+        });
+
+      document
+        .getElementById("tombolBatalTarget")
+        .addEventListener("click", function () {
+          formTarget.reset();
+          formTarget.hidden = true;
+        });
+
+      formTarget.addEventListener("submit", function (event) {
+        event.preventDefault();
+        const nama = document.getElementById("inputNamaTarget").value.trim();
+        const nominal = bacaNominal(
+          document.getElementById("inputNominalTarget").value,
+        );
+        if (nama === "" || !nominal) {
+          alert("Isi nama dan jumlah target dengan benar.");
+          return;
+        }
+        targetTabungan.push({
+          id: "g" + Date.now(),
+          nama: nama,
+          targetNominal: nominal,
+          terkumpul: 0,
+          deadline: document.getElementById("inputDeadlineTarget").value,
+        });
+        simpanData(KUNCI_TARGET, targetTabungan);
+        tampilkanTarget();
+        formTarget.reset();
+        formTarget.hidden = true;
+      });
+
+      document
+        .getElementById("tombolTambahAnggaran")
+        .addEventListener("click", function () {
+          formAnggaran.reset();
+          formAnggaran.hidden = false;
+        });
+
+      document
+        .getElementById("tombolBatalAnggaran")
+        .addEventListener("click", function () {
+          formAnggaran.reset();
+          formAnggaran.hidden = true;
+        });
+
+      formAnggaran.addEventListener("submit", function (event) {
+        event.preventDefault();
+        const kategori = document.getElementById("inputKategoriAnggaran").value;
+        const batas = bacaNominal(
+          document.getElementById("inputBatasAnggaran").value,
+        );
+        if (!batas) {
+          alert("Isi batas anggaran dengan angka lebih dari 0.");
+          return;
+        }
+        const sudahAda = anggaran.find(function (a) {
+          return a.kategori === kategori;
+        });
+        if (sudahAda) {
+          sudahAda.batas = batas;
+        } else {
+          anggaran.push({
+            id: "a" + Date.now(),
+            kategori: kategori,
+            batas: batas,
+            periode: "bulanan",
+          });
+        }
+        simpanData(KUNCI_ANGGARAN, anggaran);
+        tampilkanAnggaran();
+        formAnggaran.reset();
+        formAnggaran.hidden = true;
+      });
+
+      tampilkanTarget();
     </script>
   </body>
 </html>
