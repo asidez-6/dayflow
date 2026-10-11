@@ -355,6 +355,57 @@
         color: var(--merah);
       }
 
+      .saldo,
+      .angka {
+        display: flex;
+        flex-direction: column;
+      }
+
+      .saldo strong {
+        font-size: 1.5rem;
+      }
+
+      .saldo strong.minus {
+        color: var(--merah);
+      }
+
+      .dua-kolom {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+      }
+
+      .sub-judul {
+        font-size: 1rem;
+        margin-bottom: 8px;
+      }
+
+      .daftar-kategori {
+        list-style: none;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+      }
+
+      .baris-atas {
+        display: flex;
+        justify-content: space-between;
+        font-size: 0.9rem;
+        margin-bottom: 4px;
+      }
+
+      .bar-latar {
+        height: 6px;
+        background: var(--garis);
+        border-radius: 3px;
+      }
+
+      .bar-isi {
+        height: 100%;
+        background: var(--oranye);
+        border-radius: 3px;
+      }
+
       .halaman {
         display: none;
       }
@@ -462,6 +513,27 @@
         <div class="kepala">
           <h1>Finansial</h1>
           <button id="tombolTambahTx" class="tombol">+ Transaksi</button>
+        </div>
+
+        <div class="kartu saldo">
+          <span class="meta">Saldo</span>
+          <strong id="teksSaldo">Rp 0</strong>
+        </div>
+
+        <div class="dua-kolom">
+          <div class="kartu angka">
+            <span class="meta">Masuk bulan ini</span>
+            <strong id="teksMasuk" class="nominal masuk">Rp 0</strong>
+          </div>
+          <div class="kartu angka">
+            <span class="meta">Keluar bulan ini</span>
+            <strong id="teksKeluar" class="nominal keluar">Rp 0</strong>
+          </div>
+        </div>
+
+        <div class="kartu">
+          <h2 class="sub-judul">Pengeluaran per kategori bulan ini</h2>
+          <ul id="daftarKategori" class="daftar-kategori"></ul>
         </div>
 
         <form id="formTx" class="kartu form" hidden>
@@ -1155,8 +1227,91 @@
         return "Rp " + angka.toLocaleString("id-ID");
       }
 
+      const teksSaldo = document.getElementById("teksSaldo");
+      const teksMasuk = document.getElementById("teksMasuk");
+      const teksKeluar = document.getElementById("teksKeluar");
+      const daftarKategori = document.getElementById("daftarKategori");
+
+      function jumlahkan(daftar) {
+        return daftar.reduce(function (total, tx) {
+          return total + tx.nominal;
+        }, 0);
+      }
+
+      function tampilkanRingkasanUang() {
+        const semuaMasuk = transaksi.filter(function (tx) {
+          return tx.jenis === "masuk";
+        });
+        const semuaKeluar = transaksi.filter(function (tx) {
+          return tx.jenis === "keluar";
+        });
+        const saldo = jumlahkan(semuaMasuk) - jumlahkan(semuaKeluar);
+
+        teksSaldo.textContent =
+          saldo < 0 ? "−" + formatRupiah(-saldo) : formatRupiah(saldo);
+        teksSaldo.classList.toggle("minus", saldo < 0);
+
+        const bulanIni = tanggalHariIni().slice(0, 7);
+        const masukBulanIni = semuaMasuk.filter(function (tx) {
+          return tx.tanggal.slice(0, 7) === bulanIni;
+        });
+        const keluarBulanIni = semuaKeluar.filter(function (tx) {
+          return tx.tanggal.slice(0, 7) === bulanIni;
+        });
+        const totalKeluar = jumlahkan(keluarBulanIni);
+
+        teksMasuk.textContent = formatRupiah(jumlahkan(masukBulanIni));
+        teksKeluar.textContent = formatRupiah(totalKeluar);
+
+        daftarKategori.innerHTML = "";
+        if (keluarBulanIni.length === 0) {
+          const kosong = document.createElement("li");
+          kosong.className = "meta";
+          kosong.textContent = "Belum ada pengeluaran bulan ini.";
+          daftarKategori.append(kosong);
+          return;
+        }
+
+        const perKategori = keluarBulanIni.reduce(function (hasil, tx) {
+          hasil[tx.kategori] = (hasil[tx.kategori] || 0) + tx.nominal;
+          return hasil;
+        }, {});
+
+        const urut = Object.entries(perKategori).sort(function (a, b) {
+          return b[1] - a[1];
+        });
+
+        urut.forEach(function (pasangan) {
+          const nama = pasangan[0];
+          const jumlah = pasangan[1];
+          const persen = Math.round((jumlah / totalKeluar) * 100);
+
+          const li = document.createElement("li");
+
+          const atas = document.createElement("div");
+          atas.className = "baris-atas";
+          const teksNama = document.createElement("span");
+          teksNama.textContent = nama + " (" + persen + "%)";
+          const teksJumlah = document.createElement("span");
+          teksJumlah.textContent = formatRupiah(jumlah);
+          atas.append(teksNama, teksJumlah);
+
+          const latar = document.createElement("div");
+          latar.className = "bar-latar";
+          const isi = document.createElement("div");
+          isi.className = "bar-isi";
+          isi.style.width = persen + "%";
+          latar.append(isi);
+
+          li.append(atas, latar);
+          daftarKategori.append(li);
+        });
+      }
+
       function tampilkanTransaksi() {
         daftarTx.innerHTML = "";
+
+        tampilkanRingkasanUang();
 
         if (transaksi.length === 0) {
           const kosong = document.createElement("li");
