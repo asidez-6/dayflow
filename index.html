@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="id">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -36,6 +36,23 @@
             padding: 16px 16px 88px;
         }
 
+        h1 {
+            font-size: 1.5rem;
+            margin-bottom: 8px;
+        }
+
+        p {
+            color: var(--teks-pudar);
+        }
+
+        .kartu {
+            background: var(--permukaan);
+            border: 1px solid var(--garis);
+            border-radius: 12px;
+            padding: 16px;
+            margin-top: 12px;
+        }
+
         nav {
             position: fixed;
             bottom: 0;
@@ -44,6 +61,17 @@
             background-color: var(--permukaan);
             border-top: 1px solid var(--garis);
             display: flex;
+        }
+
+        nav button {
+            flex: 1;
+            min-height: 56px;
+            border: none;
+            background: none;
+            font: inherit;
+            font-size: 0.85rem;
+            color: var(--teks-pudar);
+            cursor: pointer;
         }
 
         nav button.aktif {
@@ -75,7 +103,8 @@
         .info {
             display: flex;
             flex-direction: column;
-        }
+            flex: 1;
+        }   
 
         .judul {
             font-weight: 600;
@@ -95,7 +124,7 @@
         
         .prioritas.tinggi { background: #fdecea; color: var(--merah); }
         .prioritas.sedang { background: #fff3e0; color: var(--oranye); }
-        .prioritas.rendah { background: #e8f5e9; color: var(--biru); }
+        .prioritas.rendah { background: #e8f5e9; color: var(--hijau); }
 
         .item-tugas.selesai .judul {
             text-decoration: line-through;
@@ -108,13 +137,75 @@
             padding: 24px;
         }
         
+        [hidden] {
+            display: none !important;
+        }
+
+        .kepala {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .tombol {
+            background: var(--biru);
+            color: #ffffff;
+            border: none;
+            border-radius: 8px;
+            padding: 8px 14px;
+            min-height: 40px;
+            font: inherit;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .tombol.sekunder {
+            background: none;
+            color: var(--teks);
+            border: 1px solid var(--garis);
+        }
+
+        .form {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .form label {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            font-size: 0.85rem;
+            color: var(--teks-pudar);
+        }
+
+        .form input,
+        .form select {
+            font: inherit;
+            color: var(--teks);
+            padding: 10px;
+            border: 1px solid var(--garis);
+            border-radius: 8px;
+        }
+
+        .aksi {
+            display: flex;
+            justify-content: flex-end;
+            gap: 8px;
+        }
+
+        .item-tugas input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+            flex-shrink: 0;
+        }
+
         .halaman {display:none;}
         .halaman.aktif {display:block;}
     </style>
 </head>
 
 <body>
-
         <main>
             <section id="beranda" class="halaman aktif">
                 <h1>Beranda</h1>
@@ -131,7 +222,34 @@
             </section>
 
             <section id="task" class="halaman">
+                <div class="kepala">
                 <h1>Task</h1>
+                <button id="tombolTambahTugas" class="tombol">+ Tambah</button>
+            </div>
+
+                <form id="formTugas" class="kartu form" hidden>
+                    <label>
+                        Judul 
+                        <input id="inputJudul" type="text" required>
+                    </label>
+                    <label>
+                        Deadline 
+                        <input id="inputDeadline" type="date" required>
+                    </label>
+                    <label>
+                        Prioritas
+                        <select id="inputPrioritas" >
+                            <option value="tinggi">Tinggi</option>
+                            <option value="sedang" selected>Sedang</option>
+                            <option value="rendah">Rendah</option>
+                        </select>
+                    </label>
+                    <div class="aksi">
+                        <button type="button" id="tombolBatal" class="tombol sekunder">Batal</button>
+                        <button type="submit" class="tombol">Simpan</button>
+                    </div>
+                </form>
+
                 <ul id="daftarTugas" class="daftar"></ul>
             </section>
 
@@ -171,7 +289,7 @@
         });
 
         let tugas =[
-            
+
         ]
 
         const daftarTugas = document.getElementById('daftarTugas');
@@ -184,6 +302,7 @@
                 kosong.className = "kosong";
                 kosong.textContent = "belum ada tugas.";
                 daftarTugas.append(kosong);
+                return;
             }
 
             tugas.forEach(function (t) {
@@ -208,14 +327,58 @@
                 label.className = "prioritas " + t.prioritas;
                 label.textContent = t.prioritas;
 
+                const centang = document.createElement("input");
+                centang.type = "checkbox";
+                centang.checked = t.selesai;
+                centang.addEventListener("change", function () {
+                    t.selesai = centang.checked;
+                    tampilkanTugas();
+                });
+
                 info.append(judul, meta);
-                li.append(info, label);
+                li.append(centang, info, label);
                 daftarTugas.append(li);
             });
         }
 
         tampilkanTugas();
         
+        const formTugas = document.getElementById("formTugas");
+        const tombolTambahTugas = document.getElementById("tombolTambahTugas");
+        const tombolBatal = document.getElementById("tombolBatal");
+
+        tombolTambahTugas.addEventListener("click", function () {
+        formTugas.hidden = false;
+        document.getElementById("inputJudul").focus();
+        });
+
+        tombolBatal.addEventListener("click", function () {
+        formTugas.reset();
+        formTugas.hidden = true;
+        });
+
+        formTugas.addEventListener("submit", function (event) {
+        event.preventDefault();
+
+        const judulBaru = document.getElementById("inputJudul").value.trim();
+        if (judulBaru === "") {
+            return;
+        }
+
+        const tugasBaru = {
+            id: "t" + Date.now(),
+            judul: judulBaru,
+            deadline: document.getElementById("inputDeadline").value,
+            prioritas: document.getElementById("inputPrioritas").value,
+            selesai: false
+        };
+
+        tugas.push(tugasBaru);
+        tampilkanTugas();
+
+        formTugas.reset();
+        formTugas.hidden = true;
+        });
     </script>
 </body>
 </html>
