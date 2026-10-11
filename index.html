@@ -329,6 +329,32 @@
         color: var(--teks-pudar);
       }
 
+      .pilih-jenis {
+        display: flex;
+        gap: 16px;
+      }
+
+      .form .opsi {
+        flex-direction: row;
+        align-items: center;
+        gap: 6px;
+        font-size: 0.95rem;
+        color: var(--teks);
+      }
+
+      .nominal {
+        font-weight: 600;
+        white-space: nowrap;
+      }
+
+      .nominal.masuk {
+        color: var(--hijau);
+      }
+
+      .nominal.keluar {
+        color: var(--merah);
+      }
+
       .halaman {
         display: none;
       }
@@ -433,10 +459,65 @@
       </section>
 
       <section id="finansial" class="halaman">
-        <h1>Finansial</h1>
-        <div class="kartu">
-          <p>Ringkasan keuangan akan tampil disini.</p>
+        <div class="kepala">
+          <h1>Finansial</h1>
+          <button id="tombolTambahTx" class="tombol">+ Transaksi</button>
         </div>
+
+        <form id="formTx" class="kartu form" hidden>
+          <div class="pilih-jenis">
+            <label class="opsi">
+              <input type="radio" name="jenisTx" value="keluar" checked />
+              Pengeluaran
+            </label>
+            <label class="opsi">
+              <input type="radio" name="jenisTx" value="masuk" />
+              Pemasukan
+            </label>
+          </div>
+          <label>
+            Nominal (Rp)
+            <input
+              id="inputNominal"
+              type="text"
+              inputmode="numeric"
+              placeholder="Contoh: 15000"
+              required
+            />
+          </label>
+          <label>
+            Kategori
+            <select id="inputKategori">
+              <option value="Makan">Makan</option>
+              <option value="Transportasi">Transportasi</option>
+              <option value="Kuliah">Kuliah</option>
+              <option value="Hiburan">Hiburan</option>
+              <option value="Kebutuhan">Kebutuhan</option>
+              <option value="Uang saku">Uang saku</option>
+              <option value="Lainnya">Lainnya</option>
+            </select>
+          </label>
+          <label>
+            Tanggal
+            <input id="inputTanggalTx" type="date" required />
+          </label>
+          <label>
+            Keterangan (opsional)
+            <input
+              id="inputKetTx"
+              type="text"
+              placeholder="Contoh: Makan siang"
+            />
+          </label>
+          <div class="aksi">
+            <button type="button" id="tombolBatalTx" class="tombol sekunder">
+              Batal
+            </button>
+            <button type="submit" class="tombol">Simpan</button>
+          </div>
+        </form>
+
+        <ul id="daftarTx" class="daftar"></ul>
       </section>
     </main>
 
@@ -902,7 +983,7 @@
         }
 
         tampilkanMinggu(habitAktif);
-        
+
         habitAktif.forEach(function (h) {
           const berlaku = berlakuPada(h, hariIni);
           const selesai = sudahSelesai(h.id, hariIni);
@@ -1063,6 +1144,134 @@
         simpanData(KUNCI_HABIT, kebiasaan);
         tampilkanHabit();
         tutupFormHabit();
+      });
+
+      const KUNCI_TX = "dayflow-transaksi";
+      let transaksi = muatData(KUNCI_TX);
+
+      const daftarTx = document.getElementById("daftarTx");
+
+      function formatRupiah(angka) {
+        return "Rp " + angka.toLocaleString("id-ID");
+      }
+
+      function tampilkanTransaksi() {
+        daftarTx.innerHTML = "";
+
+        if (transaksi.length === 0) {
+          const kosong = document.createElement("li");
+          kosong.className = "kosong";
+          kosong.textContent = "Belum ada transaksi.";
+          daftarTx.append(kosong);
+          return;
+        }
+
+        const urut = transaksi.slice().sort(function (a, b) {
+          if (a.tanggal !== b.tanggal) {
+            return a.tanggal < b.tanggal ? 1 : -1;
+          }
+          return a.id < b.id ? 1 : -1;
+        });
+
+        urut.forEach(function (tx) {
+          const li = document.createElement("li");
+          li.className = "item-tugas";
+
+          const info = document.createElement("div");
+          info.className = "info";
+
+          const judul = document.createElement("span");
+          judul.className = "judul";
+          judul.textContent = tx.deskripsi || tx.kategori;
+
+          const meta = document.createElement("span");
+          meta.className = "meta";
+          meta.textContent = formatTanggal(tx.tanggal) + " · " + tx.kategori;
+
+          info.append(judul, meta);
+
+          const nominal = document.createElement("span");
+          nominal.className = "nominal " + tx.jenis;
+          nominal.textContent =
+            (tx.jenis === "masuk" ? "+" : "−") + formatRupiah(tx.nominal);
+
+          const tombolHapus = document.createElement("button");
+          tombolHapus.className = "tombol-kecil hapus";
+          tombolHapus.textContent = "Hapus";
+          tombolHapus.dataset.id = tx.id;
+          tombolHapus.addEventListener("click", function () {
+            hapusTransaksi(tombolHapus.dataset.id);
+          });
+
+          li.append(info, nominal, tombolHapus);
+          daftarTx.append(li);
+        });
+      }
+
+      function hapusTransaksi(id) {
+        if (!confirm("Hapus transaksi ini?")) {
+          return;
+        }
+        transaksi = transaksi.filter(function (tx) {
+          return tx.id !== id;
+        });
+        simpanData(KUNCI_TX, transaksi);
+        tampilkanTransaksi();
+      }
+
+      tampilkanTransaksi();
+
+      const formTx = document.getElementById("formTx");
+      const inputNominal = document.getElementById("inputNominal");
+      const inputKategori = document.getElementById("inputKategori");
+      const inputTanggalTx = document.getElementById("inputTanggalTx");
+      const inputKetTx = document.getElementById("inputKetTx");
+
+      function tutupFormTx() {
+        formTx.reset();
+        formTx.hidden = true;
+      }
+
+      document
+        .getElementById("tombolTambahTx")
+        .addEventListener("click", function () {
+          formTx.reset();
+          inputTanggalTx.value = tanggalHariIni();
+          formTx.hidden = false;
+          inputNominal.focus();
+        });
+
+      document
+        .getElementById("tombolBatalTx")
+        .addEventListener("click", function () {
+          tutupFormTx();
+        });
+
+      formTx.addEventListener("submit", function (event) {
+        event.preventDefault();
+
+        const nominal = Number(inputNominal.value.replace(/\D/g, ""));
+        if (!nominal || nominal <= 0) {
+          alert("Nominal harus berupa angka lebih dari 0.");
+          return;
+        }
+
+        const jenis = document.querySelector(
+          'input[name="jenisTx"]:checked',
+        ).value;
+
+        transaksi.push({
+          id: "x" + Date.now(),
+          jenis: jenis,
+          nominal: nominal,
+          kategori: inputKategori.value,
+          tanggal: inputTanggalTx.value,
+          deskripsi: inputKetTx.value.trim(),
+        });
+
+        simpanData(KUNCI_TX, transaksi);
+        tampilkanTransaksi();
+        tutupFormTx();
       });
     </script>
   </body>
