@@ -272,6 +272,15 @@
         white-space: nowrap;
       }
 
+      .ringkasan {
+        margin-top: 4px;
+        font-size: 0.9rem;
+      }
+
+      .item-tugas.libur {
+        opacity: 0.55;
+      }
+
       .halaman {
         display: none;
       }
@@ -295,6 +304,7 @@
           <h1>Habit</h1>
           <button id="tombolTambahHabit" class="tombol">+ Tambah</button>
         </div>
+        <p id="ringkasanHabit" class="ringkasan"></p>
 
         <form id="formHabit" class="kartu form" hidden>
           <label>
@@ -695,16 +705,50 @@
       let kebiasaan = muatData(KUNCI_HABIT);
       let idEditHabit = null;
 
+      const KUNCI_CATATAN = "dayflow-catatan-kebiasaan";
+      let catatanHabit = muatData(KUNCI_CATATAN);
+
+      const ringkasanHabit = document.getElementById("ringkasanHabit");
+
+      function berlakuPada(h, tanggal) {
+        const hari = new Date(tanggal + "T00:00:00").getDay();
+        if (h.jadwal === "kerja") {
+          return hari >= 1 && hari <= 5;
+        }
+        if (h.jadwal === "akhir") {
+          return hari === 0 || hari === 6;
+        }
+        return true;
+      }
+
+      function sudahSelesai(idHabit, tanggal) {
+        return catatanHabit.some(function (c) {
+          return c.idKebiasaan === idHabit && c.tanggal === tanggal;
+        });
+      }
+
+      function aturSelesai(idHabit, tanggal, selesai) {
+        catatanHabit = catatanHabit.filter(function (c) {
+          return !(c.idKebiasaan === idHabit && c.tanggal === tanggal);
+        });
+        if (selesai) {
+          catatanHabit.push({ tanggal: tanggal, idKebiasaan: idHabit });
+        }
+        simpanData(KUNCI_CATATAN, catatanHabit);
+      }
+
       const daftarHabit = document.getElementById("daftarHabit");
 
       function tampilkanHabit() {
         daftarHabit.innerHTML = "";
+        const hariIni = tanggalHariIni();
 
         const habitAktif = kebiasaan.filter(function (h) {
           return h.aktif;
         });
 
         if (habitAktif.length === 0) {
+          ringkasanHabit.textContent = "";
           const kosong = document.createElement("li");
           kosong.className = "kosong";
           kosong.textContent =
@@ -713,9 +757,49 @@
           return;
         }
 
+        const jadwalHariIni = habitAktif.filter(function (h) {
+          return berlakuPada(h, hariIni);
+        });
+        const jumlahSelesai = jadwalHariIni.filter(function (h) {
+          return sudahSelesai(h.id, hariIni);
+        }).length;
+
+        if (jadwalHariIni.length === 0) {
+          ringkasanHabit.textContent =
+            "Tidak ada kebiasaan yang dijadwalkan hari ini.";
+        } else if (jumlahSelesai === jadwalHariIni.length) {
+          ringkasanHabit.textContent =
+            "Hari ini: semua " + jumlahSelesai + " kebiasaan selesai.";
+        } else {
+          ringkasanHabit.textContent =
+            "Hari ini: " +
+            jumlahSelesai +
+            " dari " +
+            jadwalHariIni.length +
+            " selesai";
+        }
+
         habitAktif.forEach(function (h) {
+          const berlaku = berlakuPada(h, hariIni);
+          const selesai = sudahSelesai(h.id, hariIni);
+
           const li = document.createElement("li");
           li.className = "item-tugas";
+          if (selesai) {
+            li.classList.add("selesai");
+          }
+          if (!berlaku) {
+            li.classList.add("libur");
+          }
+
+          const centang = document.createElement("input");
+          centang.type = "checkbox";
+          centang.checked = selesai;
+          centang.disabled = !berlaku;
+          centang.addEventListener("change", function () {
+            aturSelesai(h.id, hariIni, centang.checked);
+            tampilkanHabit();
+          });
 
           const info = document.createElement("div");
           info.className = "info";
@@ -725,7 +809,12 @@
           nama.textContent = h.nama;
           info.append(nama);
 
-          if (h.keterangan) {
+          if (!berlaku) {
+            const meta = document.createElement("span");
+            meta.className = "meta";
+            meta.textContent = "Tidak dijadwalkan hari ini";
+            info.append(meta);
+          } else if (h.keterangan) {
             const meta = document.createElement("span");
             meta.className = "meta";
             meta.textContent = h.keterangan;
@@ -756,7 +845,7 @@
           });
 
           aksi.append(tombolEdit, tombolHapus);
-          li.append(info, label, aksi);
+          li.append(centang, info, label, aksi);
           daftarHabit.append(li);
         });
       }
