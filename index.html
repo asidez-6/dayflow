@@ -241,6 +241,15 @@
             .tombol-kecil.hapus {
             color: var(--merah);
         }
+        
+        .item-tugas.lewat {
+            border-color: var(--merah);
+        }
+
+        .item-tugas.lewat .meta {
+            color: var(--merah);
+            font-weight: 600;
+        }
 
         .halaman {display:none;}
         .halaman.aktif {display:block;}
@@ -358,6 +367,28 @@
         
         const daftarTugas = document.getElementById('daftarTugas');
 
+        const NAMA_BULAN = ["Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Agu", "Sep", "Okt", "Nov", "Des"];
+        const URUTAN_PRIORITAS = { tinggi: 0, sedang: 1, rendah: 2 };
+
+        function tanggalHariIni() {
+            const d = new Date();
+            const tahun = d.getFullYear();
+            const bulan = String(d.getMonth() + 1).padStart(2, "0");
+            const hari = String(d.getDate()).padStart(2, "0");
+            return tahun + "-" + bulan + "-" + hari;
+        }
+
+        function formatTanggal(teks) {
+            const bagian = teks.split("-");
+            return Number(bagian[2]) + " " + NAMA_BULAN[Number(bagian[1]) - 1];
+        }
+
+        function selisihHari(teks) {
+            const target = new Date(teks + "T00:00:00");
+            const sekarang = new Date(tanggalHariIni() + "T00:00:00");
+            return Math.round((target - sekarang) / 86400000);
+        }
+
         function tampilkanTugas() {
         daftarTugas.innerHTML = "";
 
@@ -370,6 +401,16 @@
             }
             return true;
         });
+
+        tugasTampil.sort(function (a, b) {
+            if (a.selesai !== b.selesai) {
+            return a.selesai ? 1 : -1;
+            }
+            if (a.deadline !== b.deadline) {
+            return a.deadline < b.deadline ? -1 : 1;
+            }
+            return URUTAN_PRIORITAS[a.prioritas] - URUTAN_PRIORITAS[b.prioritas];
+        }); 
 
         if (tugasTampil.length === 0) {
             const kosong = document.createElement("li");
@@ -404,7 +445,21 @@
 
                 const meta = document.createElement("span");
                 meta.className = "meta";
-                meta.textContent = "Deadline " + t.deadline;
+                const sisa = selisihHari(t.deadline);
+                let keterangan;
+                if (t.selesai) {
+                    keterangan = "Selesai";
+                } else if (sisa < 0) {
+                    keterangan = "Lewat " + (-sisa) + " hari";
+                li.classList.add("lewat");
+                } else if (sisa === 0) {
+                    keterangan = "Hari ini";
+                } else if (sisa === 1) {
+                    keterangan = "Besok";
+                } else {
+                    keterangan = sisa + " hari lagi";
+                }
+                meta.textContent = formatTanggal(t.deadline) + " · " + keterangan;
 
                 const label = document.createElement("span");
                 label.className = "prioritas " + t.prioritas;
