@@ -491,6 +491,31 @@
         font-weight: 600;
       }
 
+      .aksi.kiri {
+        justify-content: flex-start;
+        flex-wrap: wrap;
+        margin-top: 12px;
+      }
+
+      label.tombol {
+        display: inline-flex;
+        align-items: center;
+      }
+
+      .pesan {
+        position: fixed;
+        left: 50%;
+        bottom: 72px;
+        transform: translateX(-50%);
+        max-width: 90%;
+        background: var(--teks);
+        color: #ffffff;
+        padding: 10px 16px;
+        border-radius: 8px;
+        font-size: 0.9rem;
+        z-index: 10;
+      }
+
       .halaman {
         display: none;
       }
@@ -532,6 +557,25 @@
         <div class="kartu">
           <h2 class="sub-judul">Kebiasaan hari ini yang belum selesai</h2>
           <ul id="habitBelum" class="daftar-kategori"></ul>
+        </div>
+        <div class="kartu">
+          <h2 class="sub-judul">Data</h2>
+          <p class="meta">
+            Semua data tersimpan di browser ini saja. Unduh cadangan secara
+            berkala, misalnya seminggu sekali.
+          </p>
+          <div class="aksi kiri">
+            <button id="tombolEkspor" class="tombol">Unduh cadangan</button>
+            <label class="tombol sekunder">
+              Pulihkan dari file
+              <input
+                id="inputImpor"
+                type="file"
+                accept="application/json,.json"
+                hidden
+              />
+            </label>
+          </div>
         </div>
       </section>
 
@@ -789,7 +833,7 @@
         <ul id="daftarTx" class="daftar"></ul>
       </section>
     </main>
-
+    <div id="pesan" class="pesan" hidden></div>
     <nav>
       <button data-halaman="beranda" class="aktif">Beranda</button>
       <button data-halaman="habit">Habit</button>
@@ -1794,7 +1838,7 @@
 
         const nominal = Number(inputNominal.value.replace(/\D/g, ""));
         if (!nominal || nominal <= 0) {
-          alert("Nominal harus berupa angka lebih dari 0.");
+          tampilkanPesan("Nominal harus berupa angka lebih dari 0.");
           return;
         }
 
@@ -1840,7 +1884,7 @@
           document.getElementById("inputNominalTarget").value,
         );
         if (nama === "" || !nominal) {
-          alert("Isi nama dan jumlah target dengan benar.");
+          tampilkanPesan("Isi nama dan jumlah target dengan benar.");
           return;
         }
         targetTabungan.push({
@@ -1877,7 +1921,7 @@
           document.getElementById("inputBatasAnggaran").value,
         );
         if (!batas) {
-          alert("Isi batas anggaran dengan angka lebih dari 0.");
+          tampilkanPesan("Isi batas anggaran dengan angka lebih dari 0.");
           return;
         }
         const sudahAda = anggaran.find(function (a) {
@@ -2065,6 +2109,93 @@
       });
 
       tampilkanBeranda();
+      let waktuPesan;
+
+      function tampilkanPesan(teks) {
+        const kotak = document.getElementById("pesan");
+        kotak.textContent = teks;
+        kotak.hidden = false;
+        clearTimeout(waktuPesan);
+        waktuPesan = setTimeout(function () {
+          kotak.hidden = true;
+        }, 2500);
+      }
+
+      const SEMUA_KUNCI = [
+        KUNCI_TUGAS,
+        KUNCI_HABIT,
+        KUNCI_CATATAN,
+        KUNCI_TX,
+        KUNCI_TARGET,
+        KUNCI_ANGGARAN,
+      ];
+
+      document
+        .getElementById("tombolEkspor")
+        .addEventListener("click", function () {
+          const cadangan = {
+            aplikasi: "Dayflow",
+            versi: 1,
+            dibuat: new Date().toISOString(),
+            data: {},
+          };
+          SEMUA_KUNCI.forEach(function (kunci) {
+            cadangan.data[kunci] = muatData(kunci);
+          });
+
+          const isi = JSON.stringify(cadangan, null, 2);
+          const blob = new Blob([isi], { type: "application/json" });
+          const alamat = URL.createObjectURL(blob);
+
+          const tautan = document.createElement("a");
+          tautan.href = alamat;
+          tautan.download = "dayflow-cadangan-" + tanggalHariIni() + ".json";
+          tautan.click();
+          URL.revokeObjectURL(alamat);
+
+          tampilkanPesan("Cadangan diunduh.");
+        });
+
+      document
+        .getElementById("inputImpor")
+        .addEventListener("change", function (event) {
+          const file = event.target.files[0];
+          if (!file) {
+            return;
+          }
+
+          const pembaca = new FileReader();
+          pembaca.onload = function () {
+            try {
+              const cadangan = JSON.parse(pembaca.result);
+              if (
+                !cadangan ||
+                cadangan.aplikasi !== "Dayflow" ||
+                !cadangan.data
+              ) {
+                tampilkanPesan("File ini bukan cadangan Dayflow.");
+                return;
+              }
+              if (
+                !confirm(
+                  "Semua data sekarang akan diganti dengan isi cadangan. Lanjutkan?",
+                )
+              ) {
+                return;
+              }
+              SEMUA_KUNCI.forEach(function (kunci) {
+                if (Array.isArray(cadangan.data[kunci])) {
+                  simpanData(kunci, cadangan.data[kunci]);
+                }
+              });
+              location.reload();
+            } catch (error) {
+              tampilkanPesan("File tidak bisa dibaca.");
+            }
+          };
+          pembaca.readAsText(file);
+          event.target.value = "";
+        });
     </script>
   </body>
 </html>
