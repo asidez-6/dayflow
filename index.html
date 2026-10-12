@@ -670,6 +670,59 @@
           <button id="tombolTambahTx" class="tombol">+ Transaksi</button>
         </div>
 
+        <form id="formTx" class="kartu form" hidden>
+          <div class="pilih-jenis">
+            <label class="opsi">
+              <input type="radio" name="jenisTx" value="keluar" checked />
+              Pengeluaran
+            </label>
+            <label class="opsi">
+              <input type="radio" name="jenisTx" value="masuk" />
+              Pemasukan
+            </label>
+          </div>
+          <label>
+            Nominal (Rp)
+            <input
+              id="inputNominal"
+              type="text"
+              inputmode="numeric"
+              placeholder="Contoh: 15000"
+              required
+            />
+          </label>
+          <label>
+            Kategori
+            <select id="inputKategori">
+              <option value="Makan">Makan</option>
+              <option value="Transportasi">Transportasi</option>
+              <option value="Kuliah">Kuliah</option>
+              <option value="Hiburan">Hiburan</option>
+              <option value="Kebutuhan">Kebutuhan</option>
+              <option value="Uang saku">Uang saku</option>
+              <option value="Lainnya">Lainnya</option>
+            </select>
+          </label>
+          <label>
+            Tanggal
+            <input id="inputTanggalTx" type="date" required />
+          </label>
+          <label>
+            Keterangan (opsional)
+            <input
+              id="inputKetTx"
+              type="text"
+              placeholder="Contoh: Makan siang"
+            />
+          </label>
+          <div class="aksi">
+            <button type="button" id="tombolBatalTx" class="tombol sekunder">
+              Batal
+            </button>
+            <button type="submit" class="tombol">Simpan</button>
+          </div>
+        </form>
+
         <div class="kartu saldo">
           <span class="meta">Saldo</span>
           <strong id="teksSaldo">Rp 0</strong>
@@ -777,58 +830,6 @@
           </form>
           <ul id="daftarAnggaran" class="daftar-kategori"></ul>
         </div>
-        <form id="formTx" class="kartu form" hidden>
-          <div class="pilih-jenis">
-            <label class="opsi">
-              <input type="radio" name="jenisTx" value="keluar" checked />
-              Pengeluaran
-            </label>
-            <label class="opsi">
-              <input type="radio" name="jenisTx" value="masuk" />
-              Pemasukan
-            </label>
-          </div>
-          <label>
-            Nominal (Rp)
-            <input
-              id="inputNominal"
-              type="text"
-              inputmode="numeric"
-              placeholder="Contoh: 15000"
-              required
-            />
-          </label>
-          <label>
-            Kategori
-            <select id="inputKategori">
-              <option value="Makan">Makan</option>
-              <option value="Transportasi">Transportasi</option>
-              <option value="Kuliah">Kuliah</option>
-              <option value="Hiburan">Hiburan</option>
-              <option value="Kebutuhan">Kebutuhan</option>
-              <option value="Uang saku">Uang saku</option>
-              <option value="Lainnya">Lainnya</option>
-            </select>
-          </label>
-          <label>
-            Tanggal
-            <input id="inputTanggalTx" type="date" required />
-          </label>
-          <label>
-            Keterangan (opsional)
-            <input
-              id="inputKetTx"
-              type="text"
-              placeholder="Contoh: Makan siang"
-            />
-          </label>
-          <div class="aksi">
-            <button type="button" id="tombolBatalTx" class="tombol sekunder">
-              Batal
-            </button>
-            <button type="submit" class="tombol">Simpan</button>
-          </div>
-        </form>
 
         <ul id="daftarTx" class="daftar"></ul>
       </section>
