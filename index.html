@@ -441,6 +441,56 @@
         font-weight: 600;
       }
 
+      .tiga-kolom {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 8px;
+        margin-top: 12px;
+      }
+
+      .ringkas {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 2px;
+        margin-top: 0;
+        padding: 12px;
+        text-align: left;
+        font: inherit;
+        color: var(--teks);
+        cursor: pointer;
+        min-width: 0;
+      }
+
+      .ringkas strong {
+        font-size: 1rem;
+        overflow-wrap: anywhere;
+      }
+
+      .ringkas.habit {
+        border-top: 3px solid var(--hijau);
+      }
+
+      .ringkas.task {
+        border-top: 3px solid var(--biru);
+      }
+
+      .ringkas.uang {
+        border-top: 3px solid var(--oranye);
+      }
+
+      .baris-sederhana {
+        display: flex;
+        justify-content: space-between;
+        gap: 8px;
+        font-size: 0.9rem;
+      }
+
+      .baris-sederhana .lewat {
+        color: var(--merah);
+        font-weight: 600;
+      }
+
       .halaman {
         display: none;
       }
@@ -453,9 +503,35 @@
   <body>
     <main>
       <section id="beranda" class="halaman aktif">
-        <h1>Beranda</h1>
+        <h1 id="sapaan">Halo</h1>
+        <p id="teksTanggal" class="meta"></p>
+
+        <div class="tiga-kolom">
+          <button class="kartu ringkas habit" data-buka="habit">
+            <span class="meta">Habit</span>
+            <strong id="ringkasHabit">0/0</strong>
+            <span id="ringkasHabitKet" class="meta"></span>
+          </button>
+          <button class="kartu ringkas task" data-buka="task">
+            <span class="meta">Task</span>
+            <strong id="ringkasTask">0</strong>
+            <span id="ringkasTaskKet" class="meta"></span>
+          </button>
+          <button class="kartu ringkas uang" data-buka="finansial">
+            <span class="meta">Saldo</span>
+            <strong id="ringkasSaldo">Rp 0</strong>
+            <span id="ringkasSaldoKet" class="meta"></span>
+          </button>
+        </div>
+
         <div class="kartu">
-          <p>Ringkasan hari ini akan tampil disini.</p>
+          <h2 class="sub-judul">Tugas terdekat</h2>
+          <ul id="tugasTerdekat" class="daftar-kategori"></ul>
+        </div>
+
+        <div class="kartu">
+          <h2 class="sub-judul">Kebiasaan hari ini yang belum selesai</h2>
+          <ul id="habitBelum" class="daftar-kategori"></ul>
         </div>
       </section>
 
@@ -733,6 +809,9 @@
         tombolNav.forEach(function (tombol) {
           tombol.classList.toggle("aktif", tombol.dataset.halaman === id);
         });
+        if (id === "beranda") {
+          tampilkanBeranda();
+        }
       }
 
       tombolNav.forEach(function (tombol) {
@@ -1821,6 +1900,171 @@
       });
 
       tampilkanTarget();
+
+      const NAMA_HARI_PANJANG = [
+        "Minggu",
+        "Senin",
+        "Selasa",
+        "Rabu",
+        "Kamis",
+        "Jumat",
+        "Sabtu",
+      ];
+      const NAMA_BULAN_PANJANG = [
+        "Januari",
+        "Februari",
+        "Maret",
+        "April",
+        "Mei",
+        "Juni",
+        "Juli",
+        "Agustus",
+        "September",
+        "Oktober",
+        "November",
+        "Desember",
+      ];
+
+      function teksSisaHari(sisa) {
+        if (sisa < 0) {
+          return "Lewat " + -sisa + " hari";
+        }
+        if (sisa === 0) {
+          return "Hari ini";
+        }
+        if (sisa === 1) {
+          return "Besok";
+        }
+        return sisa + " hari lagi";
+      }
+
+      function isiDaftar(ul, teksKosong) {
+        ul.innerHTML = "";
+        const kosong = document.createElement("li");
+        kosong.className = "meta";
+        kosong.textContent = teksKosong;
+        ul.append(kosong);
+      }
+
+      function tampilkanBeranda() {
+        const sekarang = new Date();
+        const jam = sekarang.getHours();
+        let salam = "Selamat malam";
+        if (jam < 11) {
+          salam = "Selamat pagi";
+        } else if (jam < 15) {
+          salam = "Selamat siang";
+        } else if (jam < 18) {
+          salam = "Selamat sore";
+        }
+        document.getElementById("sapaan").textContent = salam;
+        document.getElementById("teksTanggal").textContent =
+          NAMA_HARI_PANJANG[sekarang.getDay()] +
+          ", " +
+          sekarang.getDate() +
+          " " +
+          NAMA_BULAN_PANJANG[sekarang.getMonth()] +
+          " " +
+          sekarang.getFullYear();
+
+        const hariIni = tanggalHariIni();
+
+        // Habit
+        const jadwalHariIni = kebiasaan.filter(function (h) {
+          return h.aktif && berlakuPada(h, hariIni);
+        });
+        const habitBelum = jadwalHariIni.filter(function (h) {
+          return !sudahSelesai(h.id, hariIni);
+        });
+        const jumlahHabitSelesai = jadwalHariIni.length - habitBelum.length;
+        document.getElementById("ringkasHabit").textContent =
+          jumlahHabitSelesai + "/" + jadwalHariIni.length;
+        document.getElementById("ringkasHabitKet").textContent =
+          jadwalHariIni.length === 0 ? "tidak ada jadwal" : "selesai hari ini";
+
+        // Task
+        const terbuka = tugas.filter(function (t) {
+          return !t.selesai;
+        });
+        const jumlahLewat = terbuka.filter(function (t) {
+          return selisihHari(t.deadline) < 0;
+        }).length;
+        document.getElementById("ringkasTask").textContent = terbuka.length;
+        document.getElementById("ringkasTaskKet").textContent =
+          jumlahLewat > 0 ? jumlahLewat + " lewat deadline" : "tugas terbuka";
+
+        // Finansial
+        const saldo =
+          jumlahkan(
+            transaksi.filter(function (tx) {
+              return tx.jenis === "masuk";
+            }),
+          ) -
+          jumlahkan(
+            transaksi.filter(function (tx) {
+              return tx.jenis === "keluar";
+            }),
+          );
+        const keluarHariIni = jumlahkan(
+          transaksi.filter(function (tx) {
+            return tx.jenis === "keluar" && tx.tanggal === hariIni;
+          }),
+        );
+        document.getElementById("ringkasSaldo").textContent =
+          saldo < 0 ? "−" + formatRupiah(-saldo) : formatRupiah(saldo);
+        document.getElementById("ringkasSaldoKet").textContent =
+          "keluar hari ini " + formatRupiah(keluarHariIni);
+
+        // Tugas terdekat
+        const ulTugas = document.getElementById("tugasTerdekat");
+        const terdekat = terbuka
+          .slice()
+          .sort(function (a, b) {
+            return a.deadline < b.deadline ? -1 : 1;
+          })
+          .slice(0, 3);
+        if (terdekat.length === 0) {
+          isiDaftar(ulTugas, "Tidak ada tugas terbuka.");
+        } else {
+          ulTugas.innerHTML = "";
+          terdekat.forEach(function (t) {
+            const sisa = selisihHari(t.deadline);
+            const li = document.createElement("li");
+            li.className = "baris-sederhana";
+            const judul = document.createElement("span");
+            judul.textContent = t.judul;
+            const ket = document.createElement("span");
+            ket.textContent = teksSisaHari(sisa);
+            ket.className = sisa < 0 ? "lewat" : "meta";
+            li.append(judul, ket);
+            ulTugas.append(li);
+          });
+        }
+
+        // Kebiasaan belum selesai
+        const ulHabit = document.getElementById("habitBelum");
+        if (jadwalHariIni.length === 0) {
+          isiDaftar(ulHabit, "Tidak ada kebiasaan yang dijadwalkan hari ini.");
+        } else if (habitBelum.length === 0) {
+          isiDaftar(ulHabit, "Semua kebiasaan hari ini sudah selesai.");
+        } else {
+          ulHabit.innerHTML = "";
+          habitBelum.forEach(function (h) {
+            const li = document.createElement("li");
+            li.className = "baris-sederhana";
+            li.textContent = h.nama;
+            ulHabit.append(li);
+          });
+        }
+      }
+
+      document.querySelectorAll("[data-buka]").forEach(function (kartu) {
+        kartu.addEventListener("click", function () {
+          bukaHalaman(kartu.dataset.buka);
+        });
+      });
+
+      tampilkanBeranda();
     </script>
   </body>
 </html>
